@@ -6,10 +6,7 @@ import threading
 import time
 from acq400_hapi import *
 
-uuts = [ 
-            Acq400("10.12.132.22")
-#            , Acq400("10.12.132.12")
-        ]
+uuts = [ Acq400("10.12.132.22") ]
 
 def run_shot():
     for u in uuts:
@@ -62,18 +59,29 @@ def run_shot():
 def sleep(secs):
     print("sleep(%.2f)" % (secs))
     time.sleep(secs)
-    
-# execution starts here
 
 class ExitCommand(Exception):
     pass
-
-
+    
+    
 def signal_handler(signal, frame):
     raise ExitCommand()
+    
+# execution starts here
 
 
+
+if __name__ == '__main__':
+    SERVER_ADDRESS = '10.12.132.22'
+    if len(sys.argv) > 1:
+        uuts = []
+        for addr in sys.argv[1:]:            
+            uuts.append(Acq400(addr))
+
+    
 signal.signal(signal.SIGINT, signal_handler)
+
+
 for u in uuts:
     u.s1.shot = 0
 
