@@ -37,9 +37,30 @@ def run_main():
     shot_controller = acq400_hapi.ShotController(uuts)
 
     try:        
-        shot_controller.run_shot(soft_trigger=True)        
-        ch01 = uuts[0].read_chan(1)
-        plt.plot(ch01)
+        shot_controller.run_shot(soft_trigger=True)
+#        ch01 = uuts[0].read_chan(1)
+#        plt.plot(ch01)
+        chx = [u.read_channels() for u in uuts]
+        
+        nsam = uuts[0].post_samples()
+        nchan = uuts[0].nchan()
+        ncol = len(uuts)
+        
+# ex: 2 x 8 ncol=2 nchan=8
+# U1 U2      FIG
+# 11 21      1  2
+# 12 22      3  4
+# 13 23
+# ...
+# 18 28     15 16
+        for col in range(ncol):
+            for chn in range(0,nchan):
+                fignum = 1 + col + chn*ncol
+                plt.subplot(nchan, ncol, fignum)
+                _label = "CH%d.%02d" % (col+1, chn+1)
+                plt.plot(chx[col][chn], label=_label)
+                
+        plt.legend()  
         plt.show()
             
     except ExitCommand:
