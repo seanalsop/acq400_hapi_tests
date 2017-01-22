@@ -1,5 +1,21 @@
 #!/usr/bin/env python
 
+""" capture upload test
+    acq1001_capplot UUT1 [UUT2 ..]
+    where UUT1 is the ip-address or host name of first uut
+    example test client runs captures in a loop on one or more uuts
+    
+    pre-requisite: UUT's are configured and ready to make a transient
+    capture 
+    eg clk is running. soft trg enabled
+    eg transient length set.
+    
+    runs one capture, uploads the data and plots with matplotlib
+    tested with 2 x 8 channels UUT's (ACQ1014)
+    matplot will get very congested with more channels.
+    this is really meant as a demonstration of capture, load to numpy,
+    it's not really intended as a scope UI.
+"""
 import signal
 import sys
 import time
@@ -7,10 +23,6 @@ import acq400_hapi
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def sleep(secs):
-    print("sleep(%.2f)" % (secs))
-    time.sleep(secs)
 
 class ExitCommand(Exception):
     pass
@@ -22,10 +34,8 @@ def signal_handler(signal, frame):
 
 
 def run_main():
-    uuts = [  ]    
-    SERVER_ADDRESS = '10.12.132.22'
-    if len(sys.argv) > 1:
-        uuts = []
+    uuts = [  ]        
+    if len(sys.argv) > 1:        
         for addr in sys.argv[1:]:            
             uuts.append(acq400_hapi.Acq400(addr))
     else:
@@ -38,8 +48,7 @@ def run_main():
 
     try:        
         shot_controller.run_shot(soft_trigger=True)
-#        ch01 = uuts[0].read_chan(1)
-#        plt.plot(ch01)
+
         chx = [u.read_channels() for u in uuts]
         
         nsam = uuts[0].post_samples()
@@ -67,7 +76,6 @@ def run_main():
         print("Finally, going down")
 
 # execution starts here
-    
 
 if __name__ == '__main__':
     run_main()
