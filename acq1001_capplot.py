@@ -56,11 +56,9 @@ def run_main():
         for col in range(ncol):
             for chn in range(0,nchan):
                 fignum = 1 + col + chn*ncol
-                plt.subplot(nchan, ncol, fignum)
-                _label = "CH%d.%02d" % (col+1, chn+1)
-                plt.plot(chx[col][chn], label=_label)
-                
-        plt.legend()  
+                plt.subplot(nchan, ncol, fignum)                
+                plt.plot(chx[col][chn], )
+                        
         plt.show()
             
     except ExitCommand:
