@@ -4,7 +4,8 @@ import signal
 import sys
 import time
 import acq400_hapi
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def sleep(secs):
@@ -35,10 +36,11 @@ def run_main():
 
     shot_controller = acq400_hapi.ShotController(uuts)
 
-    try:
-        while True:
-            shot_controller.run_shot(soft_trigger=True)
-            sleep(1.0)            
+    try:        
+        shot_controller.run_shot(soft_trigger=True)        
+        ch01 = uuts[0].read_chan(1)
+        plt.plot(ch01)
+        plt.show()
             
     except ExitCommand:
         print("ExitCommand raised and caught")
