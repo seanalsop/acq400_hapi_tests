@@ -55,7 +55,7 @@ def run_main():
             for chn in range(0,nchan):
                 fignum = 1 + col + chn*ncol
                 plt.subplot(nchan, ncol, fignum)                
-                plt.plot(chx[col][chn], )
+                plt.plot(chx[col][chn])
                         
         plt.show()
             
