@@ -12,24 +12,9 @@
     
     loop continues "forever" until <CTRL-C>
 """
-import signal
+
 import sys
-import time
 import acq400_hapi
-
-
-
-def sleep(secs):
-    print("sleep(%.2f)" % (secs))
-    time.sleep(secs)
-
-class ExitCommand(Exception):
-    pass
-    
-    
-def signal_handler(signal, frame):
-    raise ExitCommand()
-    
 
 
 def run_main():
@@ -38,19 +23,19 @@ def run_main():
         for addr in sys.argv[1:]:            
             uuts.append(acq400_hapi.Acq400(addr))
     else:
-        uuts.append(acq400_hapi.Acq400("10.12.132.22"))
+        print("USAGE: acq1001_caploop UUT1 [UUT2 ..]")
+        sys.exit(1)        
 
-    
-    signal.signal(signal.SIGINT, signal_handler)
+    acq400_hapi.cleanup.init()
 
     shot_controller = acq400_hapi.ShotController(uuts)
 
     try:
         while True:
             shot_controller.run_shot(soft_trigger=True)
-            sleep(1.0)            
+            acq400_hapi.cleanup.sleep(1.0)            
             
-    except ExitCommand:
+    except acq400_hapi.cleanup.ExitCommand:
         print("ExitCommand raised and caught")
     finally:
         print("Finally, going down")

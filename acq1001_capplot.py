@@ -16,22 +16,11 @@
     this is really meant as a demonstration of capture, load to numpy,
     it's not really intended as a scope UI.
 """
-import signal
+
 import sys
-import time
 import acq400_hapi
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-class ExitCommand(Exception):
-    pass
-    
-    
-def signal_handler(signal, frame):
-    raise ExitCommand()
-    
-
 
 def run_main():
     uuts = [  ]        
@@ -39,10 +28,10 @@ def run_main():
         for addr in sys.argv[1:]:            
             uuts.append(acq400_hapi.Acq400(addr))
     else:
-        uuts.append(acq400_hapi.Acq400("10.12.132.22"))
+        print("USAGE: acq1001_caploop UUT1 [UUT2 ..]")
+        sys.exit(1)        
 
-    
-    signal.signal(signal.SIGINT, signal_handler)
+    acq400_hapi.cleanup.init()
 
     shot_controller = acq400_hapi.ShotController(uuts)
 
@@ -55,7 +44,7 @@ def run_main():
         nchan = uuts[0].nchan()
         ncol = len(uuts)
         
-# ex: 2 x 8 ncol=2 nchan=8
+# plot ex: 2 x 8 ncol=2 nchan=8
 # U1 U2      FIG
 # 11 21      1  2
 # 12 22      3  4
@@ -70,7 +59,7 @@ def run_main():
                         
         plt.show()
             
-    except ExitCommand:
+    except acq400_hapi.cleanup.ExitCommand:
         print("ExitCommand raised and caught")
     finally:
         print("Finally, going down")
