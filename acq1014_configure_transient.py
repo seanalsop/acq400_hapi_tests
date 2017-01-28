@@ -22,16 +22,19 @@ def configure_shot(args):
     for u in reversed(uuts):
         print("uut:%s" % u.uut)
         u.s0.trace = 1;
+        u.s0.transient = "PRE=%d POST=%d" % (args.pre, args.post)
+        t_args = [args.trg.split(' ')[0], 
+                  "prepost" if args.pre>0 else "post", 
+                  "falling" if "falling" in args.trg else "rising"]
         
-        t_args = args.trg.split(' ')
-        if len(t_args) > 1:
-            t_args[1] = "prepost" if args.pre>0 else "post"
         u.s0.acq1014_select_trg_src = ' '.join(t_args)
-        
+                
         if u in mset:
             u.s0.acq1014_select_clk_src = args.clk
         else:
             optargs = args.clk.split(' ')[1:]
+            if len(optargs) >= 3:
+                optargs[2] = 0      # choose internal default
             u.s0.acq1014_select_clk_src = 'int ' + ' '.join(optargs)
             
         u.s0.trace = 0
@@ -41,7 +44,7 @@ def run_main():
     parser.add_argument('--pre', type=int, default=0, help="pre trigger length")
     parser.add_argument('--post', type=int, default=100000, help="post trigger length")
     parser.add_argument('--clk', default="int 50000000", help='clk "int|ext SR [CR]"')
-    parser.add_argument('--trg', default="int", help='trg "int|ext post rising|falling"')
+    parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('uuts', nargs='*', help="uut pairs: m1,m2 [s1,s2 ...]")
     configure_shot(parser.parse_args())
 
