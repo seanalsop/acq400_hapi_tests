@@ -22,7 +22,7 @@ def configure_shot(args):
     for u in reversed(uuts):
         print("uut:%s" % u.uut)
         u.s0.trace = 1;
-        u.s0.transient = "PRE=%d POST=%d" % (args.pre, args.post)
+        u.s0.transient = "PRE=%d POST=%d SOFT_TRIGGER=0" % (args.pre, args.post)
         t_args = [args.trg.split(' ')[0], 
                   "prepost" if args.pre>0 else "post", 
                   "falling" if "falling" in args.trg else "rising"]
