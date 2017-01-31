@@ -21,8 +21,13 @@ import sys
 import acq400_hapi
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
+
 
 def run_main():
+    global SOFT_TRIGGER
     uuts = [  ]        
     if len(sys.argv) > 1:        
         for addr in sys.argv[1:]:            
@@ -36,7 +41,7 @@ def run_main():
     shot_controller = acq400_hapi.ShotController(uuts)
 
     try:        
-        shot_controller.run_shot(soft_trigger=True)
+        shot_controller.run_shot(soft_trigger=SOFT_TRIGGER)
 
         chx = [u.read_channels() for u in uuts]
         
