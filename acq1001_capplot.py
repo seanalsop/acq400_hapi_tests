@@ -24,17 +24,20 @@ import matplotlib.pyplot as plt
 import os
 
 SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
-
+TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
+SAVEDATA=int(os.getenv("SAVEDATA", "0"))
+PLOTDATA=int(os.getenv("PLOTDATA", "1"))
 
 def run_main():
-    global SOFT_TRIGGER
+    global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA
     uuts = [  ]        
     if len(sys.argv) > 1:        
         for addr in sys.argv[1:]:            
             uuts.append(acq400_hapi.Acq400(addr))
     else:
         print("USAGE: acq1001_caploop UUT1 [UUT2 ..]")
-        sys.exit(1)        
+        sys.exit(1)   
+
 
     acq400_hapi.cleanup.init()
 
@@ -43,6 +46,13 @@ def run_main():
     try:        
         shot_controller.run_shot(soft_trigger=SOFT_TRIGGER)
 
+        if SAVEDATA:
+            for u in uuts:
+                u.save_data = 1
+        if TRACE_UPLOAD:
+            for u in uuts:
+                u.trace = 1
+                
         chx = [u.read_channels() for u in uuts]
         
         nsam = uuts[0].post_samples()
@@ -56,13 +66,14 @@ def run_main():
 # 13 23
 # ...
 # 18 28     15 16
-        for col in range(ncol):
-            for chn in range(0,nchan):
-                fignum = 1 + col + chn*ncol
-                plt.subplot(nchan, ncol, fignum)                
-                plt.plot(chx[col][chn])
+        if PLOTDATA:
+            for col in range(ncol):
+                for chn in range(0,nchan):
+                    fignum = 1 + col + chn*ncol
+                    plt.subplot(nchan, ncol, fignum)                
+                    plt.plot(chx[col][chn])
                         
-        plt.show()
+            plt.show()
             
     except acq400_hapi.cleanup.ExitCommand:
         print("ExitCommand raised and caught")
