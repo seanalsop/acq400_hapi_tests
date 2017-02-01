@@ -25,7 +25,7 @@ import os
 
 SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
 TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
-SAVEDATA=int(os.getenv("SAVEDATA", "0"))
+SAVEDATA=os.getenv("SAVEDATA", None)
 PLOTDATA=int(os.getenv("PLOTDATA", "1"))
 
 def run_main():
@@ -48,7 +48,7 @@ def run_main():
 
         if SAVEDATA:
             for u in uuts:
-                u.save_data = 1
+                u.save_data = SAVEDATA
         if TRACE_UPLOAD:
             for u in uuts:
                 u.trace = 1
