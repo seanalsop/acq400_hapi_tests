@@ -53,11 +53,11 @@ def run_main():
             for u in uuts:
                 u.trace = 1
                 
-        chx = [u.read_channels() for u in uuts]
+        chx, ncol, nchan, nsam = shot_controller.read_channels()
         
-        nsam = uuts[0].post_samples()
-        nchan = uuts[0].nchan()
-        ncol = len(uuts)
+        #nsam = uuts[0].post_samples()
+        #nchan = uuts[0].nchan()
+        #ncol = len(uuts)
         
 # plot ex: 2 x 8 ncol=2 nchan=8
 # U1 U2      FIG
