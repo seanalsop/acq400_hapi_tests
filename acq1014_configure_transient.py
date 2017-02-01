@@ -42,7 +42,7 @@ def configure_shot(args):
             c_args[2] = intSI(c_args[2])
     c_args = [str(x) for x in c_args]
     
-    for u in reversed(uuts):
+    for u in uuts:
         print("uut:%s" % u.uut)
         u.s0.trace = 1;
         u.s0.transient = "PRE=%d POST=%d SOFT_TRIGGER=0" % (pre, post)
