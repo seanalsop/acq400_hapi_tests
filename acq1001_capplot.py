@@ -27,6 +27,7 @@ SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
 TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
 SAVEDATA=os.getenv("SAVEDATA", None)
 PLOTDATA=int(os.getenv("PLOTDATA", "1"))
+CAPTURE=int(os.getenv("CAPTURE", "1"))
 
 def run_main():
     global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA
@@ -43,8 +44,9 @@ def run_main():
 
     shot_controller = acq400_hapi.ShotController(uuts)
 
-    try:        
-        shot_controller.run_shot(soft_trigger=SOFT_TRIGGER)
+    try:  
+        if CAPTURE:
+            shot_controller.run_shot(soft_trigger=SOFT_TRIGGER)
 
         if SAVEDATA:
             for u in uuts:
