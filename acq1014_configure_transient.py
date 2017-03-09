@@ -48,14 +48,7 @@ def configure_shot(args):
         u.s0.transient = "PRE=%d POST=%d SOFT_TRIGGER=0" % (pre, post)
                 
         u.s0.acq1014_select_trg_src = ' '.join(t_args)
-                
-        if u in mset:
-            u.s0.acq1014_select_clk_src = ' '.join(c_args)
-        else:
-            c_args1 = c_args
-            if len(c_args1) >= 3:
-                c_args1[2] = '0'          # choose internal default                 
-            u.s0.acq1014_select_clk_src = 'int ' + ' '.join(c_args1)
+        u.s0.acq1014_select_clk_src = ' '.join(c_args)
             
         u.s0.trace = 0
 
