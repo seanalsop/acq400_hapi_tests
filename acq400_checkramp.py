@@ -22,26 +22,17 @@ import acq400_hapi
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import ast
+import time
 
 SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
 TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
 SAVEDATA=os.getenv("SAVEDATA", None)
 PLOTDATA=int(os.getenv("PLOTDATA", "1"))
 CAPTURE=int(os.getenv("CAPTURE", "1"))
-CHANNELS=os.getenv("CHANNELS", None)
-# CHANNELS: blank or () : ALL
-# CHANNELS: 1 : channel 1
-# CHANNELS: 1,5 : channels 1 and 5
-# CHANNELS: (1,5),(1.6) : 1+5 uut1, 1+6 uut2
-
-if CHANNELS == None:
-    CHANNELS = ()
-else:
-    CHANNELS = ast.literal_eval(CHANNELS)
+PLOTTO=int(os.getenv("PLOTTO", "0"))
 
 def run_main():
-    global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA, CHANNELS
+    global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA, PLOTTO
     uuts = [  ]        
     if len(sys.argv) > 1:        
         for addr in sys.argv[1:]:            
@@ -66,7 +57,7 @@ def run_main():
             for u in uuts:
                 u.trace = 1
                 
-        chx, ncol, nchan, nsam = shot_controller.read_channels(CHANNELS)
+        chx, ncol, nchan, nsam = shot_controller.read_channels((1,33))
       
 # plot ex: 2 x 8 ncol=2 nchan=8
 # U1 U2      FIG
@@ -75,16 +66,34 @@ def run_main():
 # 13 23
 # ...
 # 18 28     15 16
+        plt.ion()
+        
+        checks = []
         if PLOTDATA:
             for col in range(ncol):
                 for chn in range(0,nchan):
                     fignum = 1 + col + chn*ncol
-                    plt.subplot(nchan, ncol, fignum)                
+                    plt.subplot(nchan+1, ncol, fignum)                
+                    plt.title("{} {}".format(uuts[col].uut, chn))
                     plt.plot(chx[col][chn])
-
+                    
+                checkramp = chx[col][nchan-1];
+                ll = len(checkramp)              
+                plt.subplot(nchan+1, ncol, fignum+3)
+                checkramp = checkramp[1:ll-1] - checkramp[0:ll-2]
+                plt.plot(checkramp)
+                checks.append((np.amax(checkramp), np.amin(checkramp)))
+            plt.draw()
+            print("stats {}".format(checks))
+            if PLOTTO > 0:
+                while PLOTTO > 0:
+                    time.sleep(1)
+                    PLOTTO -= 1
+            else:
+                print("hit return to quit")
+                sys.stdin.readline()
                 
-                        
-            plt.show()
+            plt.close()
             
     except acq400_hapi.cleanup.ExitCommand:
         print("ExitCommand raised and caught")
