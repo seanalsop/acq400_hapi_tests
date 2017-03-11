@@ -22,15 +22,26 @@ import acq400_hapi
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import ast
 
 SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
 TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
 SAVEDATA=os.getenv("SAVEDATA", None)
 PLOTDATA=int(os.getenv("PLOTDATA", "1"))
 CAPTURE=int(os.getenv("CAPTURE", "1"))
+CHANNELS=os.getenv("CHANNELS", None)
+# CHANNELS: blank or () : ALL
+# CHANNELS: 1 : channel 1
+# CHANNELS: 1,5 : channels 1 and 5
+# CHANNELS: (1,5),(1.6) : 1+5 uut1, 1+6 uut2
+
+if CHANNELS == None:
+    CHANNELS = ()
+else:
+    CHANNELS = ast.literal_eval(CHANNELS)
 
 def run_main():
-    global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA
+    global SOFT_TRIGGER,TRACE_UPLOAD, SAVEDATA, PLOTDATA, CHANNELS
     uuts = [  ]        
     if len(sys.argv) > 1:        
         for addr in sys.argv[1:]:            
@@ -55,7 +66,7 @@ def run_main():
             for u in uuts:
                 u.trace = 1
                 
-        chx, ncol, nchan, nsam = shot_controller.read_channels()
+        chx, ncol, nchan, nsam = shot_controller.read_channels(CHANNELS)
       
 # plot ex: 2 x 8 ncol=2 nchan=8
 # U1 U2      FIG
