@@ -21,12 +21,15 @@ import sys
 import acq400_hapi
 
 
+def FTW1(ratio):
+	return format(long(ratio * pow(2,48)), '012x')
+
 def init_chirp(uut, dds):
 # SETTING KAKA'AKOS CHIRP
 #
 # Set AD9854 clock remap to 25 MHz
-    uut.ddsC.CR     = '004C0041'
-    uut.ddsC.FTW1   = '1AAAAAAAAAAA'
+    uut.ddsC.CR     = '004A0041'
+    uut.ddsC.FTW1   = FTW1(0.1)
 
 # Program AD9512 secondary clock to choose 25 MHz from the AD9854 remap
     uut.clkdB.CSPD  = '02'
