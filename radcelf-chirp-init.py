@@ -3,6 +3,18 @@
 """ radcelf-chirp-init - set up a chirp ..
     radcelf-chirp-init UUT1
     where UUT1 is the ip-address or host name of the uut
+    powerful alternative to embedded shell script.
+    
+    no ssh keys or remote execution, nfs mounts required.
+    
+    potential enhancements stepping stone to avoid the magic numbers:
+    eg
+            AD9854.CR.X4 = 00040000
+    potential to program real numbers eg
+      >>> format(long(0.5 * pow(2,48)), '012x')
+     '800000000000'
+  
+    seamless integration with data capture (and maybe postprocess and analysis..)
 """
 
 import sys
@@ -34,10 +46,7 @@ def init_chirp(uut):
 
 # Set the trigger
     uut.s2.ddsA_upd_clk_fpga = 0
-# pgm .. not needed
-#echo b > /dev/acq400.0.knobs/fpctl_sync
-
-
+    
 # lera_acq_setup
 # we assume a 25MHz from ddsC
 # trigger from site 3 ddsA
