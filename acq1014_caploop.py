@@ -39,7 +39,7 @@ def run_loop(args):
 
     try:
         while True:
-            shot_controller.run_shot(acq1014_ext_trigger=3)
+            shot_controller.run_shot(soft_trigger=1,acq1014_ext_trigger=3)
             if args.sleep >= 0:
                 acq400_hapi.cleanup.sleep(args.sleep)            
             else:
