@@ -21,13 +21,24 @@ import sys
 import acq400_hapi
 
 
+# AD9854 class in the making ..
 def FTW1(ratio):
 	return format(long(ratio * pow(2,48)), '012x')
 
-def init_chirp(uut, dds):
+def set_upd_clk_fpga(uut, idds, value):
+    if idds == 0:
+	uut.s2.ddsA_upd_clk_fpga = value
+    else:
+	uut.s2.ddsB_upd_clk_fpga = value
+    
+	
+
+def init_chirp(uut, idds):
 # SETTING KAKA'AKOS CHIRP
 #
 # Set AD9854 clock remap to 25 MHz
+    dds = uut.ddsA if idds == 0 else uut.ddsB
+
     uut.ddsC.CR     = '004A0041'
     uut.ddsC.FTW1   = FTW1(0.1)
 
@@ -37,7 +48,7 @@ def init_chirp(uut, dds):
 
 
 # Program the chirp using Kaka'ako parameters
-    uut.s2.ddsA_upd_clk_fpga = '1'
+    set_upd_clk_fpga(uut, idds, '1')
     dds.CR     = '004F0061'
     dds.FTW1   = '172B020C49BA'
     dds.DFR    = '0000000021D1'
@@ -46,10 +57,9 @@ def init_chirp(uut, dds):
     dds.IPDMR  = '0FFF'
     dds.QPDMR  = '0FFF'
     dds.CR     = '004C8761'
-
-# Set the trigger
-    uut.s2.ddsA_upd_clk_fpga = 0
+    set_upd_clk_fpga(uut, idds, '0')
     
+# Set the trigger
 # lera_acq_setup
 # we assume a 25MHz from ddsC
 # trigger from site 3 ddsA
@@ -65,12 +75,12 @@ def run_main():
         uut = acq400_hapi.RAD3DDS(sys.argv[1])
 	if len(sys.argv) > 2 and sys.argv[2] == "ddsB":
 		print "operate on ddsB"
-		dds = uut.ddsB
+		idds = 1
 	else:
 		print "operate on ddsA"
-		dds = uut.ddsA
+		idds = 0
 	
-        init_chirp(uut, dds)
+        init_chirp(uut, idds)
     else:
         print("USAGE: radcelf-chirp-init UUT1")
         sys.exit(1)        
