@@ -21,7 +21,7 @@ import sys
 import acq400_hapi
 
 
-def init_chirp(uut):
+def init_chirp(uut, dds):
 # SETTING KAKA'AKOS CHIRP
 #
 # Set AD9854 clock remap to 25 MHz
@@ -35,14 +35,14 @@ def init_chirp(uut):
 
 # Program the chirp using Kaka'ako parameters
     uut.s2.ddsA_upd_clk_fpga = '1'
-    uut.ddsA.CR     = '004F0061'
-    uut.ddsA.FTW1   = '172B020C49BA'
-    uut.ddsA.DFR    = '0000000021D1'
-    uut.ddsA.UCR    = '01F01FD0'
-    uut.ddsA.RRCR   = '000001'
-    uut.ddsA.IPDMR  = '0FFF'
-    uut.ddsA.QPDMR  = '0FFF'
-    uut.ddsA.CR     = '004C8761'
+    dds.CR     = '004F0061'
+    dds.FTW1   = '172B020C49BA'
+    dds.DFR    = '0000000021D1'
+    dds.UCR    = '01F01FD0'
+    dds.RRCR   = '000001'
+    dds.IPDMR  = '0FFF'
+    dds.QPDMR  = '0FFF'
+    dds.CR     = '004C8761'
 
 # Set the trigger
     uut.s2.ddsA_upd_clk_fpga = 0
@@ -60,7 +60,14 @@ def init_chirp(uut):
 def run_main():           
     if len(sys.argv) > 1:       
         uut = acq400_hapi.RAD3DDS(sys.argv[1])
-        init_chirp(uut)
+	if len(sys.argv) > 2 and sys.argv[2] == "ddsB":
+		print "operate on ddsB"
+		dds = uut.ddsB
+	else:
+		print "operate on ddsA"
+		dds = uut.ddsA
+	
+        init_chirp(uut, dds)
     else:
         print("USAGE: radcelf-chirp-init UUT1")
         sys.exit(1)        
