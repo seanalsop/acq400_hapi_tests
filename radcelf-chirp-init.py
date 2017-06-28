@@ -39,8 +39,8 @@ def init_chirp(uut, idds):
 # Set AD9854 clock remap to 25 MHz
     dds = uut.ddsA if idds == 0 else uut.ddsB
 
-    uut.ddsC.CR     = '004A0041'
-    uut.ddsC.FTW1   = FTW1(0.1)
+    uut.ddsC.CR     = '004C0041'
+    uut.ddsC.FTW1   = FTW1(1.0/12.0)
 
 # Program AD9512 secondary clock to choose 25 MHz from the AD9854 remap
     uut.clkdB.CSPD  = '02'
