@@ -4,34 +4,34 @@
     radcelf-chirp-init UUT1
     where UUT1 is the ip-address or host name of the uut
     powerful alternative to embedded shell script.
-    
+
     no ssh keys or remote execution, nfs mounts required.
-    
+
     potential enhancements stepping stone to avoid the magic numbers:
     eg
             AD9854.CR.X4 = 00040000
     potential to program real numbers eg
       >>> format(long(0.5 * pow(2,48)), '012x')
      '800000000000'
-  
+
     seamless integration with data capture (and maybe postprocess and analysis..)
 """
 
 import sys
 import acq400_hapi
-
+import argparse
 
 # AD9854 class in the making ..
 def FTW1(ratio):
-	return format(long(ratio * pow(2,48)), '012x')
+    return format(long(ratio * pow(2,48)), '012x')
 
 def set_upd_clk_fpga(uut, idds, value):
     if idds == 0:
-	uut.s2.ddsA_upd_clk_fpga = value
+        uut.s2.ddsA_upd_clk_fpga = value
     else:
-	uut.s2.ddsB_upd_clk_fpga = value
-    
-	
+        uut.s2.ddsB_upd_clk_fpga = value
+
+
 
 def init_chirp(uut, idds):
 # SETTING KAKA'AKOS CHIRP
@@ -49,7 +49,7 @@ def init_chirp(uut, idds):
 
 # Program the chirp using Kaka'ako parameters
     set_upd_clk_fpga(uut, idds, '1')
-    dds.CR     = '004F0061'
+    dds.CR     = '004C0061'
     dds.FTW1   = '172B020C49BA'
     dds.DFR    = '0000000021D1'
     dds.UCR    = '01F01FD0'
@@ -58,7 +58,7 @@ def init_chirp(uut, idds):
     dds.QPDMR  = '0FFF'
     dds.CR     = '004C8761'
     set_upd_clk_fpga(uut, idds, '0')
-    
+
 # Set the trigger
 # lera_acq_setup
 # we assume a 25MHz from ddsC
@@ -68,23 +68,39 @@ def init_chirp(uut, idds):
     uut.s1.hi_res_mode = '1'
 # 25 MHz/4 = 6.25MHz / 512 = SR 12207
     uut.s1.CLKDIV   = '4'
+
+
+def valid_chirp(freq):
+    return freq >= 4 or freq <= 5
+
+def verify_chirp(uut, test):
+    retry = 0
     
-
-def run_main():           
-    if len(sys.argv) > 1:       
-        uut = acq400_hapi.RAD3DDS(sys.argv[1])
-	if len(sys.argv) > 2 and sys.argv[2] == "ddsB":
-		print "operate on ddsB"
-		idds = 1
-	else:
-		print "operate on ddsA"
-		idds = 0
-	
-        init_chirp(uut, idds)
-    else:
-        print("USAGE: radcelf-chirp-init UUT1")
-        sys.exit(1)        
-
+    while retry < 10:
+        if valid_chirp(uut.s0.SIG_TRG_S2_FREQ) and valid_chirp(uut.s0.SIG_TRG_S3_FREQ):
+            print("test:%d  PASS %s %s" % (test, uut.s0.SIG_TRG_S2_FREQ, uut.s0.SIG_TRG_S3_FREQ))
+            return True
+        else:
+            time.sleep(1)
+            retry = retry + 1
+            
+    return False
+        
+def run_test(args):
+    uut = acq400_hapi.RAD3DDS(args.uut[0])
+    
+    for test in range(0, args.test):
+        uut.s2.RADCELF_init = 1
+        init_chirp(uut, 0)
+        init_chirp(uut, 1)
+        verify_chirp(uut, test)
+    
+def run_main():  
+    parser = argparse.ArgumentParser(description='radcelf-chirp-init')
+    parser.add_argument('--test', default=1, type=int, help="set number of tests to run")
+    parser.add_argument('uut', nargs=1, help="uut")
+    run_test(parser.parse_args())
+    
 # execution starts here
 
 if __name__ == '__main__':
