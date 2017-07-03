@@ -45,6 +45,7 @@ def configure_shot(args):
     for u in uuts:
         print("uut:%s" % u.uut)
         u.s0.trace = 1;
+	u.s0.set_abort = 1;
         u.s0.transient = "PRE=%d POST=%d SOFT_TRIGGER=0" % (pre, post)
                 
         u.s0.acq1014_select_trg_src = ' '.join(t_args)
@@ -56,7 +57,7 @@ def run_main():
     parser = argparse.ArgumentParser(description='configure multiple acq1014')
     parser.add_argument('--pre', default=0, help="pre trigger length")
     parser.add_argument('--post', default=100000, help="post trigger length")
-    parser.add_argument('--clk', default="int 50000000", help='clk "int|ext SR [CR]"')
+    parser.add_argument('--clk', default="int 80000000", help='clk "int|ext SR [CR]"')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('uuts', nargs='*', help="uut pairs: m1,m2 [s1,s2 ...]")
     configure_shot(parser.parse_args())
