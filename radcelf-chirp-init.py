@@ -20,6 +20,8 @@
 import sys
 import acq400_hapi
 import argparse
+import time
+
 
 # AD9854 class in the making ..
 def FTW1(ratio):
@@ -31,7 +33,8 @@ def set_upd_clk_fpga(uut, idds, value):
     else:
         uut.s2.ddsB_upd_clk_fpga = value
 
-
+def freq(sig):
+    return float(sig.split(" ")[1])
 
 def init_chirp(uut, idds):
 # SETTING KAKA'AKOS CHIRP
@@ -77,7 +80,7 @@ def verify_chirp(uut, test):
     retry = 0
     
     while retry < 10:
-        if valid_chirp(uut.s0.SIG_TRG_S2_FREQ) and valid_chirp(uut.s0.SIG_TRG_S3_FREQ):
+        if valid_chirp(freq(uut.s0.SIG_TRG_S2_FREQ)) and valid_chirp(freq(uut.s0.SIG_TRG_S3_FREQ)):
             print("test:%d  PASS %s %s" % (test, uut.s0.SIG_TRG_S2_FREQ, uut.s0.SIG_TRG_S3_FREQ))
             return True
         else:
