@@ -43,6 +43,17 @@ def run_loop(args):
                 shot_controller.run_shot(soft_trigger=1,acq1014_ext_trigger=1)
             else:
                 shot_controller.run_shot(soft_trigger=0,acq1014_ext_trigger=3)
+
+            if args.nsam > 0:
+                nsam = [len(u.read_chan(1)) for u in uuts]
+                err = False
+                for n in nsam:
+                    if n != args.nsam:
+                        err = True
+                print("Shot %s read_channels nsam:%d %d %s" % (uuts[0].s1.shot, nsam[0], nsam[1], 'Fail' if err else 'Pass'))
+                if err:
+                    break
+
             if args.sleep >= 0:
                 acq400_hapi.cleanup.sleep(args.sleep)            
             else:
@@ -60,6 +71,7 @@ def run_main():
     parser = argparse.ArgumentParser(description='acq1014 looptest')
     parser.add_argument('--sleep', default=1, type=int, help="sleep time between shots, -1:pause input")
     parser.add_argument('--trg', default='int', type=str, help="trigger int|ext")
+    parser.add_argument('--nsam', default=0, type=int, help='expected number of samples')
     parser.add_argument('uuts', nargs='+', help="uut pairs: m1,m2 [s1,s2 ...]")
     run_loop(parser.parse_args())
 
