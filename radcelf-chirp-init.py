@@ -66,11 +66,15 @@ def init_chirp(uut, idds):
 # lera_acq_setup
 # we assume a 25MHz from ddsC
 # trigger from site 3 ddsA
-    uut.s1.trg  = '1,3,1'
-    uut.s1.clk  = '1,3,1'
-    uut.s1.hi_res_mode = '1'
+    try:
+	uut.s1.trg  = '1,3,1'
+	uut.s1.clk  = '1,3,1'
+	uut.s1.hi_res_mode = '1'
 # 25 MHz/4 = 6.25MHz / 512 = SR 12207
-    uut.s1.CLKDIV   = '4'
+	uut.s1.CLKDIV   = '4'
+    except:
+        print "ACQ435 not fitted"
+
 
 
 def valid_chirp(freq):
