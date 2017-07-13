@@ -36,17 +36,18 @@ def start_shot(uut, args):
 
 
 def stop_shot(uut):
+    print("stop_shot")
     uut.s0.streamtonowhered = "stop"
 
 def run_shot(args):    
-    uut = acq400_hapi.Acq2106(args.uut)
+    uut = acq400_hapi.Acq2106(args.uut[0])
 
     config_shot(uut, args)
     init_comms(uut)
     init_work(uut, args)
     try:
         start_shot(uut, args)
-        time.sleep(args.secs)
+        time.sleep(float(args.secs))
     except KeyboardInterrupt:
         pass
     stop_shot(uut)
