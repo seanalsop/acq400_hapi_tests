@@ -24,6 +24,10 @@ def config_shot(uut, args):
     # worktodo .. set clock 
     uut.s0.run0 = uut.s0.sites
 
+    if args.sim != "nosim":
+        for site in args.sim.split(','):
+            uut.svc['s%s' % (site)].simulate = '1'
+
 def init_comms(uut):
     uut.cA.spad = 0
     uut.cA.aggregator = "sites=%s" % (uut.s0.sites)
@@ -47,7 +51,10 @@ def run_shot(args):
     init_work(uut, args)
     try:
         start_shot(uut, args)
-        time.sleep(float(args.secs))
+	for ts in range(0, int(args.secs)):
+	    sys.stdout.write("Time ... %8d / %8d\r" % (ts, int(args.secs)))
+            sys.stdout.flush()
+	    time.sleep(1)
     except KeyboardInterrupt:
         pass
     stop_shot(uut)
@@ -60,6 +67,7 @@ def run_main():
     parser.add_argument('--secs', default=999999, help="capture seconds [default:0 inifinity]")
     parser.add_argument('--clk', default="int 50000000", help='clk "int|ext SR [CR]"')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
+    parser.add_argument('--sim', default="nosim", help='list of sites to run in simulate mode')
     parser.add_argument('uut', nargs='+', help="uut ")
     run_shot(parser.parse_args())
 
