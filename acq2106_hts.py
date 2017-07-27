@@ -24,9 +24,23 @@ def config_shot(uut, args):
     # worktodo .. set clock 
     uut.s0.run0 = uut.s0.sites
 
+    for s in args.sim.split(','):
+	print "hello s {}".format(s)
+
+    if str(3) in args.sim.split(','):
+	print "in"
+    else:
+	print "NOT IN"
+
+    sim_sites = {}
     if args.sim != "nosim":
-        for site in args.sim.split(','):
-            uut.svc['s%s' % (site)].simulate = '1'
+	sim_sites = [ int(s) for s in args.sim.split(',')]
+
+    for site in uut.modules:
+	sim = '1' if site in sim_sites else '0'
+        uut.svc['s%s' % (site)].simulate = sim
+	print "site {} sim {}".format(site, sim)
+	
 
 def init_comms(uut):
     uut.cA.spad = 0
