@@ -7,12 +7,26 @@
 import sys
 import acq400_hapi
 import argparse
+import re
 
 
 def load_stl(uut, stl):
     with open(stl, 'r') as fp: 
         uut.load_gpg(fp.read())
         
+def make_waterfall(uut, interval, hitime, states):
+    stl = ''
+    on = True
+    cursor = interval
+    for s in states:
+        if on:
+            stl += '%d,%d\n' % (cursor, s)
+            on = False
+        else:
+            stl += '%d,%d\n' % (cursor+hitime, s)
+            cursor += interval
+            on = True
+    uut.load_gpg(stl)        
     
 def soft_trigger_loop(uut):
     while True:
@@ -31,6 +45,13 @@ def run_gpg(args):
     uut.s0.trace = 1
     if args.stl != 'none':
         load_stl(uut, args.stl)
+    elif args.waterfall != 'none':
+        (interval, hitime) = [int(s) for s in re.findall(r'\d+', args.waterfall)]
+        make_waterfall(uut, interval, hitime, [1,0,2,0,4,0,8,0])
+       
+# assume diousb biscuit in place
+    for dx in [0, 1, 2, 3]:
+        uut.s0.set_knob('SIG_EVENT_SRC_{}'.format(dx), 'GPG')
     uut.s0.gpg_trg='1,{},1'.format(1 if args.trg == 'soft' else 0)
     uut.s0.GPG_MODE=args.mode
     uut.s0.GPG_ENABLE = '1'
@@ -53,6 +74,7 @@ def run_main():
     parser.add_argument('--mode', default='LOOPWAIT', type=str, help='mode')
     parser.add_argument('--disable', default='0', type=int, help='1: disable')
     parser.add_argument('--stl', default='none', type=str, help='stl file')
+    parser.add_argument('--waterfall', default='none', help='d0,d1,d2,d3 waterfall [interval,hitime]')
     parser.add_argument('uut', nargs=1, help="uut")
     run_gpg(parser.parse_args())
 
