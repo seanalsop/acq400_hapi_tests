@@ -12,17 +12,12 @@ class RunsFiles:
         self.uut = uut
         self.files = files
         
-    def generate(self):
+    def load(self):
         for f in self.files:
             with open(f, mode='r') as fp:
                 self.uut.load_awg(fp.read())
             yield f        
 
-
-def wrapper(func, *args, **kwargs):
-    def wrapped():
-        return func(*args, **kwargs)
-    return wrapped        
 
 class RainbowGen:
     NCYCLES = 5
@@ -55,7 +50,7 @@ class RainbowGen:
             self.aw[:,ch] = self.rainbow(ch)
 
     
-    def generate(self):        
+    def load(self):        
         #for ch in range(self.nchan):
         for ch in range(8):             # convenient to plot 8
             aw1 = np.copy(self.aw)
@@ -68,7 +63,13 @@ class RainbowGen:
 def run_shots(args):
     uut = acq400_hapi.Acq400(args.uuts[0])
     acq400_hapi.cleanup.init()
-    shot_controller = acq400_hapi.ShotController([uut])
+    if args.capture > 0:
+        uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d' % \
+            (args.post, 1 if args.trg == 'int' else 0)
+        shot_controller = acq400_hapi.ShotController([uut])
+    
+    for sx in uut.modules:
+        uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
     
     if args.files != "":
         work = RunsFiles(uut, args.files.split(','))
@@ -78,7 +79,7 @@ def run_shots(args):
     for ii in range(0, args.loop):
         print("shot: %d" % (ii))
             
-        for f in work.generate():
+        for f in work.load():
             print("Loaded %s" % (f))
             if args.capture > 0:
                 shot_controller.run_shot(soft_trigger= True if args.trg=='int' else False)
@@ -93,6 +94,7 @@ def run_main():
     parser.add_argument('--capture', type=int, default=0, help="run a capture (assumes ADC present)")    
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
+    parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('uuts', nargs=1, help="uut ")
     run_shots(parser.parse_args())
