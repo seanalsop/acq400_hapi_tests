@@ -6,22 +6,10 @@
 
 import sys
 import acq400_hapi
+from acq400_hapi import intSI as intSI
 import argparse
 import sets
 
-def intSI(x):
-    x = str(x)
-    units = x.find('M')
-    if units >= 0:
-        return int(x[0:units])*1000000
-    else:
-        units = x.find('k')
-        if units >= 0:
-            return int(x[0:units])*1000
-        else:
-            return int(x)
-        
-    
 
 def configure_shot(args):        
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts]  
