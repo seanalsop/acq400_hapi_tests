@@ -19,8 +19,10 @@ def run_shots(args):
     
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
-    
-    if args.files != "":
+
+    if args.files == "@ALLFULLSCALE":
+        work = awg_data.AllFullScale(uut, args.nchan, args.awglen)    
+    elif args.files != "":
         work = awg_data.RunsFiles(uut, args.files.split(','))
     else:
         work = awg_data.RainbowGen(uut, args.nchan, args.awglen)
