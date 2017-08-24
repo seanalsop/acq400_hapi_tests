@@ -44,7 +44,7 @@ def configure_shot(args):
 
     for u in uuts:
         print("uut:%s" % u.uut)
-        u.s0.trace = 1;
+        u.s0.trace = 1
         u.s0.set_abort = 1;
         u.s0.transient = "PRE=%d POST=%d SOFT_TRIGGER=0" % (pre, post)
 
