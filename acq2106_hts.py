@@ -65,7 +65,7 @@ def run_shot(args):
     uut = acq400_hapi.Acq2106(args.uut[0])
 
     config_shot(uut, args)
-    init_comms(uut)
+    init_comms(uut, args)
     init_work(uut, args)
     try:
         start_shot(uut, args)
