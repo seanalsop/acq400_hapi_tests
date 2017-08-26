@@ -10,7 +10,8 @@ parser.add_argument('--sys', default=0, help="run in interpreter loop N times")
 parser.add_argument('uut', nargs='+', help="uut")
 
 args = parser.parse_args()
-uuts = [ acq400_hapi.Acq400(u) for u in args.uut ]
+#uuts = [ acq400_hapi.Acq400(u) for u in args.uut ]
+uuts = [ acq400_hapi.Acq2106(u) for u in args.uut ]
 uut = uuts[0]
 
 def sys1(cmd):
