@@ -29,7 +29,9 @@ def run_main(parser):
             trg = "1,%d,%d" % (1 if parser.master_trg=="int" else 0, rf(parser.trg_edge))
             
             uut.set_sync_routing_master()
-            uut.set_master_trg(parser.master_trg, \
+            # ensure there are two values to unpack, provide a default for the 2nd value..
+            mtrg, edge = (parser.master_trg.split(',') + [ "rising" ])[:2]            
+            uut.set_master_trg(mtrg, edge, \
                                enabled = True if parser.master_trg=="int" else False)
             set_mb_clk(uut, parser.master_clk.split(','))            
             role = "slave"
@@ -37,14 +39,17 @@ def run_main(parser):
             trg = "1,%d,%d" % (0, rf(parser.trg_edge))
             uut.set_sync_routing_slave()
             
+        uut.s0.SIG_TRG_EXT_RESET = '1'  # self-clears   
+        
         for s in uut.modules:
+            
             uut.modules[s].trg = trg
             uut.modules[s].clk = '1,0,1'
             uut.modules[s].clkdiv = parser.clkdiv
      
     if parser.master_trg != "int":
          raw_input("say when")
-         uuts[0].set_master_trg(parser.master_trg, enabled=True)       
+         uuts[0].set_master_trg(mtrg, edge, enabled=True)       
         
 
 # execution starts here
