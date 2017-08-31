@@ -42,9 +42,13 @@ def config_shot(uut, args):
         print "site {} sim {}".format(site, sim)
 
 
-def init_comms(uut):
-    uut.cA.spad = 0
-    uut.cA.aggregator = "sites=%s" % (uut.s0.sites)
+def init_comms(uut, args):
+    if args.commsA != "none":
+        uut.cA.spad = 0
+        uut.cA.aggregator = "sites=%s" % (uut.s0.sites if args.commsA == 'all' else args.commsA)
+    if args.commsB != "none":
+        uut.cB.spad = 0
+        uut.cB.aggregator = "sites=%s" % (uut.s0.sites if args.commsB == 'all' else args.commsB)
 
 def init_work(uut, args):
     print "init_work"
@@ -61,7 +65,7 @@ def run_shot(args):
     uut = acq400_hapi.Acq2106(args.uut[0])
 
     config_shot(uut, args)
-    init_comms(uut)
+    init_comms(uut, args)
     init_work(uut, args)
     try:
         start_shot(uut, args)
@@ -82,6 +86,8 @@ def run_main():
     parser.add_argument('--clk', default="int 50000000", help='clk "int|ext,SR,[CR]"')
     parser.add_argument('--trg', default="int", help='trg "int|ext,rising|falling"')
     parser.add_argument('--sim', default="nosim", help='list of sites to run in simulate mode')
+    parser.add_argument('--commsA', default="all", help='custom list of sites for commsA')
+    parser.add_argument('--commsB', default="none", help='custom list of sites for commsB')
     parser.add_argument('uut', nargs='+', help="uut ")
     run_shot(parser.parse_args())
 
