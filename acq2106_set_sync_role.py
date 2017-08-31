@@ -24,7 +24,10 @@ def run_main(parser):
     role = "master"
     
     for uut in uuts:
-        uut.s0.trace = 1
+        if parser.trace:
+            uut.s0.trace = 1
+            uut.s1.trace = 1
+            
         if role == "master":
             trg = "1,%d,%d" % (1 if parser.master_trg=="int" else 0, rf(parser.trg_edge))
             
@@ -58,6 +61,7 @@ if __name__ == '__main__':
     parser.add_argument("--master_trg", default="int", help="master_trg src alt fp")
     parser.add_argument("--trg_edge", default="rising", help="selects trigger edge all modules")
     parser.add_argument("--clkdiv", default="1", help="clock divider, each module")
+    parser.add_argument("--trace", default=0, help="set command tracing")
     parser.add_argument("uuts", nargs='+', help="uut pairs: m1 [s1 s2 ...]")
     run_main(parser.parse_args())
 
