@@ -13,8 +13,9 @@ import time
 
 
 def config_shot(uut, args):
-    uut.s1.trg = "1,%d,%d" % (0 if args.trg.split(',')[0] == 'ext' else 1,
-                              0 if args.trg.split(',')[1] == 'falling' else 1)
+    if args.trg != "notouch":
+        uut.s1.trg = "1,%d,%d" % (0 if args.trg.split(',')[0] == 'ext' else 1,
+                                  0 if args.trg.split(',')[1] == 'falling' else 1)
 
     c_args = args.clk.split(',')
     if len(c_args) > 1:
