@@ -45,7 +45,7 @@ def run_main(parser):
         uut.s0.SIG_TRG_EXT_RESET = '1'  # self-clears   
         
         uut.s1.trg = trg
-        uut.s1.clk = '1,0,1'
+        uut.s1.clk = '1,1,1'
         uut.s1.clkdiv = parser.clkdiv
      
     if parser.master_trg != "int":
