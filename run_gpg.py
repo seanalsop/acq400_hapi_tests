@@ -12,7 +12,7 @@ import re
 
 def load_stl(uut, stl):
     with open(stl, 'r') as fp: 
-        uut.load_gpg(fp.read())
+        uut.load_gpg(fp.read(), uut.s0.trace)
         
 def make_waterfall(uut, interval, hitime, states):
     stl = ''
@@ -26,7 +26,7 @@ def make_waterfall(uut, interval, hitime, states):
             stl += '%d,%d\n' % (cursor+hitime, s)
             cursor += interval
             on = True
-    uut.load_gpg(stl)        
+    uut.load_gpg(stl, uut.s0.trace)
     
 def soft_trigger_loop(uut):
     while True:
@@ -42,7 +42,9 @@ def run_gpg(args):
     if args.disable == 1:
         uut.s0.GPG_ENABLE = '0'
         return
-    uut.s0.trace = 1
+    
+    uut.s0.trace = args.trace
+    
     if args.stl != 'none':
         load_stl(uut, args.stl)
     elif args.waterfall != 'none':
@@ -75,6 +77,7 @@ def run_main():
     parser.add_argument('--disable', default='0', type=int, help='1: disable')
     parser.add_argument('--stl', default='none', type=str, help='stl file')
     parser.add_argument('--waterfall', default='none', help='d0,d1,d2,d3 waterfall [interval,hitime]')
+    parser.add_argument('--trace', type=int, default = 0, help='trace wire protocol')
     parser.add_argument('uut', nargs=1, help="uut")
     run_gpg(parser.parse_args())
 
