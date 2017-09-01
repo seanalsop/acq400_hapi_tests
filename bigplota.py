@@ -1,4 +1,4 @@
-#!/usr/bin/python -i
+#!/usr/bin/python
 
 import sys
 import argparse
@@ -13,7 +13,7 @@ FMT = "%s/ACQ400DATA/%d/%s/%06d/%d.%02d"
 def get_uut():
     p1 = subprocess.Popen(['get-ident'], stdout=subprocess.PIPE)
     return p1.communicate()[0].strip().split(' ')
-    
+
 
 uut = "acq2106_000"
 (host, uut) = get_uut()
@@ -32,63 +32,75 @@ def plot16(l3, ic=0, nc=16):
     (chx, lun, uut, cycle, nchan) = l3
     for ch in range(ic,ic+nc):
         plt.plot(chx[:,ch])
-        
+
     plt.title("uut: {} lun:{} ch {}..{}".format(uut, lun, ic+1, ic+nc+1))
     plt.xlabel("cycle {:06}".format(cycle))
     plt.show()
-    
+
 
 class LoadsHost:
-        def __init__(self, host, uut):
-            self.uut = uut
-            self.host = host
-            
-        def load3(self, lun=0, cycle=1, buf0=0, nchan=48):
-            return load3("data/{}".format(self.host), lun, self.uut, cycle, buf0, nchan)
-       
+    def __init__(self, host, uut):
+        self.uut = uut
+        self.host = host
+
+    def load3(self, lun=0, cycle=1, buf0=0, nchan=48):
+        return load3("data/{}".format(self.host), lun, self.uut, cycle, buf0, nchan)
+
 loaders = [ LoadsHost(h, u) for (h, u) in (("Bolby", "acq2106_070"), ("Betso", "acq2106_071"),
-                                       ("Ladna", "acq2106_072"), ("Vindo", "acq2106_073"))]
-        
+                                           ("Ladna", "acq2106_072"), ("Vindo", "acq2106_073"))]
+
 def get4(lun=0, cycle=1, buf0=0):
     return [ l.load3(lun, cycle, buf0) for l in loaders]
 
-lenb = 0x400000
-len3 = 3*lenb
-ssize= 48*2
-sam3 = len3/ssize
-buffc = 99
-buffc3 = buffc/3
+def bigplota(args):
+    lenb = 0x400000
+    len3 = 3*lenb
+    ssize= 48*2
+    sam3 = len3/ssize
+    buffc = 99
+    buffc3 = buffc/3
 
-M1 = 1000000
-SR = 2*M1
+    M1 = 1000000
+    SR = 2*M1
 
-pulsem = (0, 2, 4, 10, 20, 40, 100, 200)
-pp = 0
-for p in pulsem:
-    samples = p*M1    
-    buf3s = samples / sam3    
-    residue = samples - buf3s * sam3            # residue, samples in triplet
-    cycle = buf3s/buffc3                        # cycle from 0   
-    cycb = 3*(buf3s - cycle*buffc3)              # buffer in cycle, first of 3
-    
-    buffers = buf3s * 3     
-    cycle += 1                                  # counts from 1
-    
-    print("samples {} buffers {} residue {} cycle {} buffc {}".format(
-        samples, buffers, residue, cycle, cycb))
-    chx = get4(cycle=cycle, buf0=cycb)
-    for m in range(0,4):
-	for c in range(0,1):
-	    plt.plot(chx[m][0][:,c], label='a{}.{}'.format(chx[m][2][8:], c))
+    pulsem = (0, 2, 4, 10, 20, 40, 100, 200)
+    pp = 0
+    for p in pulsem:
+        samples = p*M1    
+        buf3s = samples / sam3    
+        residue = samples - buf3s * sam3            # residue, samples in triplet
+        cycle = buf3s/buffc3                        # cycle from 0   
+        cycb = 3*(buf3s - cycle*buffc3)              # buffer in cycle, first of 3
         
-    plt.legend(loc='upper left', bbox_to_anchor=(1,1))
-    plt.title("UUTS {} at t {}s, pulse {} at sample {}".format("ALL", p*M1/SR, pp, p*M1))   
-    plt.axvline(x=residue)
-    plt.xlabel('cycle:{} buf:{}'.format(cycle, cycb))
-    plt.show()          
-    pp += 1
+        buffers = buf3s * 3     
+        cycle += 1                                  # counts from 1
+
+        print("samples {} buffers {} residue {} cycle {} buffc {}".format(
+            samples, buffers, residue, cycle, cycb))
+        chx = get4(cycle=cycle, buf0=cycb)
+        print("modules:{} maxchan:{}".format(args.modules, args.maxchan))
+        for m in range(0, args.modules):
+            for c in range(0, args.maxchan):
+                cc = c + args.firstchan
+                plt.plot(chx[m][0][:,cc], label='a{}.{}'.format(chx[m][2][8:], cc))
+
+        plt.legend(loc='upper left', bbox_to_anchor=(1,1))
+        plt.title("UUTS:{} at t {}s, pulse {} at sample {}".format(args.modules, p*M1/SR, pp, p*M1))   
+        plt.axvline(x=residue)
+        plt.xlabel('cycle:{} buf:{}'.format(cycle, cycb))
+        plt.show()          
+        pp += 1
+
+                
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="plots selected pulses")
+    parser.add_argument("--modules", type=int, default=4, help="plot across these modules")
+    parser.add_argument("--maxchan", type=int, default=4, help="plot maxchan per module")
+    parser.add_argument("--firstchan", type=int, default=0,  help="selects trigger edge all modules")
+    bigplota(parser.parse_args())                 
 
 
 
 
-    
+
+
