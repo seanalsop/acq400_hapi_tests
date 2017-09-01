@@ -78,14 +78,18 @@ def bigplota(args):
         print("samples {} buffers {} residue {} cycle {} buffc {}".format(
             samples, buffers, residue, cycle, cycb))
         chx = get4(cycle=cycle, buf0=cycb)
-        print("modules:{} maxchan:{}".format(args.modules, args.maxchan))
-        for m in range(0, args.modules):
-            for c in range(0, args.maxchan):
-                cc = c + args.firstchan
-                plt.plot(chx[m][0][:,cc], label='a{}.{}'.format(chx[m][2][8:], cc))
-
+        
+        u0 = args.u1 - 1
+        u1 = args.u2
+        c0 = args.c1 - 1
+        c1 = args.c2
+        
+        for u in range(u0, u1):
+            for c in range(c0, c1):                
+                plt.plot(chx[u][0][:,c], label='a{}.{}'.format(chx[u][2][8:], c+1))
+       
         plt.legend(loc='upper left', bbox_to_anchor=(1,1))
-        plt.title("UUTS:{} at t {}s, pulse {} at sample {}".format(args.modules, p*M1/SR, pp, p*M1))   
+        plt.title("UUTS:{} at t {}s, pulse {} at sample {}".format(range(u0+1,u1+1), p*M1/SR, pp, p*M1))   
         plt.axvline(x=residue)
         plt.xlabel('cycle:{} buf:{}'.format(cycle, cycb))
         plt.show()          
@@ -94,9 +98,10 @@ def bigplota(args):
                 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="plots selected pulses")
-    parser.add_argument("--modules", type=int, default=4, help="plot across these modules")
-    parser.add_argument("--maxchan", type=int, default=4, help="plot maxchan per module")
-    parser.add_argument("--firstchan", type=int, default=0,  help="selects trigger edge all modules")
+    parser.add_argument("--u1", type=int, default=1, help="first uut (count from 1)")
+    parser.add_argument("--u2", type=int, default=4, help="last uut (count from 1), inclusive")
+    parser.add_argument("--c1", type=int, default=1, help="first channel (count from 1)")
+    parser.add_argument("--c2", type=int, default=4, help="last channel (count from 1), inclusive")
     bigplota(parser.parse_args())                 
 
 
