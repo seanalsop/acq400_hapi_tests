@@ -78,16 +78,15 @@ for p in pulsem:
         samples, buffers, residue, cycle, cycb))
     chx = get4(cycle=cycle, buf0=cycb)
     for m in range(0,4):
-        plt.plot(chx[m][0][:,0:4])
+	for c in range(0,1):
+	    plt.plot(chx[m][0][:,c], label='a{}.{}'.format(chx[m][2][8:], c))
         
+    plt.legend(loc='upper left', bbox_to_anchor=(1,1))
     plt.title("UUTS {} at t {}s, pulse {} at sample {}".format("ALL", p*M1/SR, pp, p*M1))   
     plt.axvline(x=residue)
     plt.xlabel('cycle:{} buf:{}'.format(cycle, cycb))
     plt.show()          
     pp += 1
-print("chx = get4(lun, cycle, buf0)")
-print("chx = get4()")
-#chx = [ l.load3() for l in loaders]
 
 
 
