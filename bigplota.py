@@ -80,9 +80,9 @@ def bigplota(args):
         chx = get4(cycle=cycle, buf0=cycb)
         
         u0 = args.u1 - 1
-        u1 = args.u2
+        u1 = args.u2 if args.u2 >= args.u1 else args.ucount+u0
         c0 = args.c1 - 1
-        c1 = args.c2
+        c1 = args.c2 if args.c2 >= args.c1 else args.ccount+c0
         
         for u in range(u0, u1):
             for c in range(c0, c1):                
@@ -99,9 +99,11 @@ def bigplota(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="plots selected pulses")
     parser.add_argument("--u1", type=int, default=1, help="first uut (count from 1)")
-    parser.add_argument("--u2", type=int, default=4, help="last uut (count from 1), inclusive")
+    parser.add_argument("--u2", type=int, default=-1, help="last uut (count from 1), inclusive")
+    parser.add_argument("--ucount", type=int, default=4, help="uut count unless overriden by --u2")
     parser.add_argument("--c1", type=int, default=1, help="first channel (count from 1)")
-    parser.add_argument("--c2", type=int, default=4, help="last channel (count from 1), inclusive")
+    parser.add_argument("--c2", type=int, default=-1, help="last channel (count from 1), inclusive")
+    parser.add_argument("--ccount", type=int, default=4, help="channel count unless overridden by --c2")
     bigplota(parser.parse_args())                 
 
 
