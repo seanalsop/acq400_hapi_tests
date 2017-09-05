@@ -83,12 +83,21 @@ def bigplota(args):
         u1 = args.u2 if args.u2 >= args.u1 else args.ucount+u0
         c0 = args.c1 - 1
         c1 = args.c2 if args.c2 >= args.c1 else args.ccount+c0
-        
+      
+	print("Hello {}".format(args.subplots))
+
         for u in range(u0, u1):
+	    if args.subplots:
+            	print("subplot {},{},{}".format(u1-u0,1,u1-u))
+		ax = plt.subplot(u1-u0,1,u)
             for c in range(c0, c1):                
                 plt.plot(chx[u][0][:,c], label='a{}.{}'.format(chx[u][2][8:], c+1))
+            if args.subplots:
+		ax.legend(loc='upper left', bbox_to_anchor=(1,1))
+
+	if args.subplots == 0:
+            plt.legend(loc='upper left', bbox_to_anchor=(1,1))
        
-        plt.legend(loc='upper left', bbox_to_anchor=(1,1))
         plt.title("UUTS:{} at t {}s, pulse {} at sample {}".format(range(u0+1,u1+1), p*M1/SR, pp, p*M1))   
         plt.axvline(x=residue)
         plt.xlabel('cycle:{} buf:{}'.format(cycle, cycb))
@@ -104,6 +113,7 @@ if __name__ == '__main__':
     parser.add_argument("--c1", type=int, default=1, help="first channel (count from 1)")
     parser.add_argument("--c2", type=int, default=-1, help="last channel (count from 1), inclusive")
     parser.add_argument("--ccount", type=int, default=4, help="channel count unless overridden by --c2")
+    parser.add_argument("--subplots", type=int, default=0, help="set to 1 to plot with subplots per uut")
     bigplota(parser.parse_args())                 
 
 
