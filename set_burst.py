@@ -23,11 +23,8 @@ def configure_bm(args):
         u.s1.RGM_SENSE  = args.sense
         u.s1.RTM_TRANSLEN = args.rtm_translen if args.rgm == 'RTM' else 0
         u.s1.es_enable  = args.es_enable
-        dx = args.dx[1:]
-        if dx == '1':
-            u.s0.set_knob('SIG_SRC_TRG_1', 'GPG1' if args.gpg == 'on' else 'STRIG')
-        if dx == '0':
-            u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' else 'EXT')
+        u.s0.set_knob('SIG_SRC_TRG_1', 'GPG1' if args.gpg == 'on' and args.dx == 'd1' else 'STRIG')
+        u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'EXT')
         u.s0.set_arm = 1
 
     # warning: this is a RACE for the case of a free-running trigger and multiple UUTs
