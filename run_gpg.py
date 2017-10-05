@@ -39,9 +39,7 @@ def soft_trigger_loop(uut):
 def run_gpg(args):
     uut = acq400_hapi.Acq400(args.uut[0])
  
-    if args.disable == 1:
-        uut.s0.GPG_ENABLE = '0'
-        return
+    uut.s0.GPG_ENABLE = '0'
     
     uut.s0.trace = args.trace
     
@@ -56,7 +54,8 @@ def run_gpg(args):
         uut.s0.set_knob('SIG_EVENT_SRC_{}'.format(dx), 'GPG')
     uut.s0.gpg_trg='1,{},1'.format(1 if args.trg == 'soft' else 0)
     uut.s0.GPG_MODE=args.mode
-    uut.s0.GPG_ENABLE = '1'
+    if args.disable != 1:
+        uut.s0.GPG_ENABLE = '1'
     
     if args.clk == 'int':
         uut.s0.gpg_clk=0,0,0
@@ -74,7 +73,7 @@ def run_main():
     parser.add_argument('--trg', default='soft', type=str, help="trigger fp|soft")
     parser.add_argument('--clk', default='int', type=str, help='clk int|dX')
     parser.add_argument('--mode', default='LOOPWAIT', type=str, help='mode')
-    parser.add_argument('--disable', default='0', type=int, help='1: disable')
+    parser.add_argument('--disable', default=0, type=int, help='1: disable')
     parser.add_argument('--stl', default='none', type=str, help='stl file')
     parser.add_argument('--waterfall', default='none', help='d0,d1,d2,d3 waterfall [interval,hitime]')
     parser.add_argument('--trace', type=int, default = 0, help='trace wire protocol')
