@@ -23,7 +23,7 @@ def configure_bm(args):
         
 
 def run_main():
-    parser = argparse.ArgumentParser(description='run_gpg')    
+    parser = argparse.ArgumentParser(description='set_burst mode')    
     parser.add_argument('--rgm', default='RTM', type=str, help="mode RGM|RTM")
     parser.add_argument('--dx', default='d0', type=str, help='dx d0|d1|d2')
     parser.add_argument('--sense', default='rising', type=str, help='rising|falling')
