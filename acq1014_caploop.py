@@ -34,6 +34,7 @@ def run_loop(args):
         if hasattr(uut.s0, 'TIM_CTRL_LOCK'):
             print "LOCKDOWN {}".format(uut)
             uut.s0.TIM_CTRL_LOCK = 1
+        uut.s1.shot='0'
 
     shot_controller = acq400_hapi.ShotController(uuts)
 
