@@ -14,6 +14,7 @@ def configure_bm(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts]
 
     for u in uuts:
+        u.s0.GPG_ENABLE = '0'       # needed if running set.burst multiple times
         u.s0.trace      = args.trace
         u.s1.trace      = args.trace
         u.s0.transient  = 'POST={}'.format(args.post)
@@ -27,9 +28,11 @@ def configure_bm(args):
         u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'EXT')
         u.s0.set_arm = 1
 
+    for u in uuts:
+        u.statmon.wait_armed()
+
     # warning: this is a RACE for the case of a free-running trigger and multiple UUTs
     if args.gpg == 'on':
-        raw_input("say when (uuts are armed)")
         for u in uuts:
             u.s0.GPG_ENABLE = '1'
         
