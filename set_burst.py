@@ -31,6 +31,10 @@ def configure_bm(args):
     for u in uuts:
         u.statmon.wait_armed()
 
+    if args.trg == '1,1,1':
+        for u in uuts:
+            u.s0.soft_trigger
+
     # warning: this is a RACE for the case of a free-running trigger and multiple UUTs
     if args.gpg == 'on':
         for u in uuts:
