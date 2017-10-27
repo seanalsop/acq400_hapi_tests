@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ capture loop test
-    acq1001_caploop UUT1 [UUT2 ..]
+    acq400_caploop UUT1 [UUT2 ..]
     where UUT1 is the ip-address or host name of first uut
     example test client runs captures in a loop on one or more uuts
     
@@ -10,7 +10,6 @@
     eg clk is running. soft trg enabled
     eg transient length set.
     
-    loop continues "forever" until <CTRL-C>
 """
 
 import sys
@@ -47,7 +46,8 @@ def run_shots(args):
     try:
         while shot < args.nshots:
             print("shot {} of {}".format(shot, args.nshots))
-            shot_controller.run_shot(remote_trigger=_remote_trigger,
+            shot_controller.run_shot(
+                    remote_trigger=_remote_trigger,
                     soft_trigger=_soft_trigger)
             shot += 1
             
