@@ -30,6 +30,7 @@ def run_shots(args):
     acq400_hapi.cleanup.init()
 
     for uut in uuts:
+        uut.s1.shot = 0
         if hasattr(uut.s0, 'TIM_CTRL_LOCK'):
             print "LOCKDOWN {}".format(uut)
             uut.s0.TIM_CTRL_LOCK = 1
@@ -45,9 +46,9 @@ def run_shots(args):
         _soft_trigger = True
     try:
         while shot < args.nshots:
+            print("shot {} of {}".format(shot, args.nshots))
             shot_controller.run_shot(remote_trigger=_remote_trigger,
                     soft_trigger=_soft_trigger)
-            acq400_hapi.cleanup.sleep(1.0)
             shot += 1
             
     except acq400_hapi.cleanup.ExitCommand:
