@@ -30,9 +30,9 @@ def run_shots(args):
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
 
     if args.files != "":
-        work = awg_data.RunsFiles(uut, args.files.split(','))
+        work = awg_data.RunsFiles(uut, args.files.split(','), True)
     else:
-        work = awg_data.RainbowGen(uut, args.aochan, args.awglen)
+        work = awg_data.RainbowGen(uut, args.aochan, args.awglen, True)
         
     store = store_file
     loader = work.load()
@@ -41,9 +41,10 @@ def run_shots(args):
         f = loader.next()
         print("Loaded %s" % (f))
         uut.run_oneshot()
-        print("read_chan %d" % (args.post*args.nchan))
-        rdata = uut.read_chan(0, args.post*args.nchan)
+
         if args.store:
+            print("read_chan %d" % (args.post*args.nchan))
+            rdata = uut.read_chan(0, args.post*args.nchan)            
             store(ii, rdata, args.nchan, args.post)
         if args.wait_user:
             raw_input("hit return to continue")

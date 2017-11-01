@@ -54,9 +54,10 @@ def run_shots(args):
         f = loader.next()
         print("Loaded %s" % (f))
         uut.run_oneshot()
-        print("read_chan %d" % (args.post*args.nchan))
-        rdata = uut.read_chan(0, args.post*args.nchan)
+
         if args.store:
+            print("read_chan %d" % (args.post*args.nchan))
+            rdata = uut.read_chan(0, args.post*args.nchan)            
             store(ii, rdata, args.nchan, args.post)
             if args.plot > 0 :
                 if args.plot == 1:
