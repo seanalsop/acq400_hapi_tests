@@ -36,13 +36,16 @@ def run_shots(args):
     uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=0' % \
             (args.post, 1 if args.trg == 'int' else 0)    
 
+    if args.aochan == 0:
+        args.aochan = args.nchan
+        
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
 
     if args.files != "":
         work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
     else:
-        work = awg_data.RainbowGen(uut, args.nchan, args.awglen, run_forever=True)
+        work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
         
     store = store_file
     loader = work.load()
@@ -68,6 +71,7 @@ def run_main():
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--loop', type=int, default=1, help="loop count")        
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
+    parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
