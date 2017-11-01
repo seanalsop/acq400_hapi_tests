@@ -33,8 +33,8 @@ def run_shots(args):
     if args.plot:
         plt.ion()
     
-    uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=0' % \
-            (args.post, 1 if args.trg == 'int' else 0)    
+    uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=%d' % \
+            (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
 
     if args.aochan == 0:
         args.aochan = args.nchan
@@ -56,26 +56,29 @@ def run_shots(args):
         uut.run_oneshot()
         print("read_chan %d" % (args.post*args.nchan))
         rdata = uut.read_chan(0, args.post*args.nchan)
-        store(ii, rdata, args.nchan, args.post)
-        if args.plot > 0 :
-            if args.plot == 1:
-                plt.cla()
-            plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
-            plot(ii, rdata, args.nchan, args.post)
-            
-    raw_input("hit return when done")
+        if args.store:
+            store(ii, rdata, args.nchan, args.post)
+            if args.plot > 0 :
+                if args.plot == 1:
+                    plt.cla()
+                    plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
+                    plot(ii, rdata, args.nchan, args.post)
+        if args.wait_user:
+            raw_input("hit return to continue")              
 
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--loop', type=int, default=1, help="loop count")        
+    parser.add_argument('--store', type=int, default=1, help="save data when true") 
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
     parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('--plot', type=int, default=1, help='--plot 1 : plot data, 2: persistent')
+    parser.add_argument('--wait_user', type=int, default=0, help='1: force user input each shot')
     parser.add_argument('uuts', nargs=1, help="uut ")
     run_shots(parser.parse_args())
 
