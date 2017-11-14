@@ -3,6 +3,8 @@ test samples for acq400_hapi
 
 nb assumes acq400_hapi is a subdirectory, or is in PYTHONPATH
 
+nb: currently requires Python 2.7,  Python 3.x is not yet supported.
+
 ## Recommended Install:
 mkdir -p PROJECTS/ACQ400/HAPI  
 cd PROJECTS/ACQ400/HAPI  
