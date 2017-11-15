@@ -36,13 +36,16 @@ class UploadFilter:
     
 
 def run_shot(uut, args):
-    uut.s14.mgt_run_shot = args.captureblocks
+	# always capture over. The offload is zero based anyway, so add another one
+    uut.s14.mgt_run_shot = str(int(args.captureblocks) + 2)
     uut.run_mgt()
     uut.s14.mgt_offload = args.offloadblocks if args.offloadblocks != 'capture' \
         else '0-{}'.format(args.captureblocks)
     uut.run_mgt(UploadFilter())
     if args.validate != 'no':
-        rc = call("{} {}".format(args.validate, uut), shell=True, stdin=0, stdout=1, stderr=2)
+	cmd = "{} {}".format(args.validate, uut.uut)
+	print "run \"{}\"".format(cmd)
+        rc = call(cmd, shell=True, stdin=0, stdout=1, stderr=2)
         if rc != 0:
             print("ERROR called process {} returned {}".format(args.validate, rc))
             exit(1)
