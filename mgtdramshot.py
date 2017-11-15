@@ -42,7 +42,7 @@ def run_shot(uut, args):
         else '0-{}'.format(args.captureblocks)
     uut.run_mgt(UploadFilter())
     if args.validate != 'no':
-        rc = call(args.validate, shell=True, stdin=0, stdout=1, stderr=2)
+        rc = call("{} {}".format(args.validate, uut), shell=True, stdin=0, stdout=1, stderr=2)
         if rc != 0:
             print("ERROR called process {} returned {}".format(args.validate, rc))
             exit(1)
