@@ -7,15 +7,43 @@ import acq400_hapi
 import awg_data
 import argparse
 from subprocess import call
+import re
+
+
+LOG = open("mgtdramshot.log", "w")
+
+class UploadFilter:
+    def __init__(self):
+        self.okregex = re.compile(r"axi0 start OK ([0-9]{4}) OK")
+        self.line = 0
+        
+    def __call__ (self, st):
+        LOG.write(st)
+        
+        if self.okregex.search(st) != None:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            self.line += 1
+            if self.line > 100:
+                sys.stdout.write('\n')
+                self.line = 0
+        else:
+            print(">{}".format(st))
+            self.line = 0            
+   
+    
 
 def run_shot(uut, args):
     uut.s14.mgt_run_shot = args.captureblocks
     uut.run_mgt()
     uut.s14.mgt_offload = args.offloadblocks if args.offloadblocks != 'capture' \
         else '0-{}'.format(args.captureblocks)
-    uut.run_mgt()
+    uut.run_mgt(UploadFilter())
     if args.validate != 'no':
-        call(args.validate, shell=True, stdin=0, stdout=1, stderr=2)
+        rc = call(args.validate, shell=True, stdin=0, stdout=1, stderr=2)
+        if rc != 0:
+            print("ERROR called process {} returned {}".format(args.validate, rc))
+            exit(1)
     
 def run_shots(args):
     uut = acq400_hapi.Acq2106(args.uut[0], has_mgtdram=True)
