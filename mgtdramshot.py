@@ -28,6 +28,8 @@ class UploadFilter:
                 sys.stdout.write('\n')
                 self.line = 0
         else:
+            if self.line != 0:
+                sys.stdout.write('\n')
             print(">{}".format(st))
             self.line = 0            
    
