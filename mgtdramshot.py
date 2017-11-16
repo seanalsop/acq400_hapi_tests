@@ -10,7 +10,7 @@ from subprocess import call
 import re
 
 
-LOG = open("mgtdramshot.log", "w")
+LOG = None
 
 class UploadFilter:
     def __init__(self):
@@ -18,7 +18,8 @@ class UploadFilter:
         self.line = 0
         
     def __call__ (self, st):
-        LOG.write(st)
+	st = st.rstrip()
+        LOG.write("{}\n".format(st))
         
         if self.okregex.search(st) != None:
             sys.stdout.write('.')
@@ -51,6 +52,8 @@ def run_shot(uut, args):
             exit(1)
     
 def run_shots(args):
+    global LOG
+    LOG = open("mgtdramshot-{}.log".format(args.uut[0]), "w")
     uut = acq400_hapi.Acq2106(args.uut[0], has_mgtdram=True)
     uut.s14.mgt_taskset = '1'
     
