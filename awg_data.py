@@ -10,7 +10,7 @@ class RunsFiles:
     def load(self):
         for ii in range(99999 if self.run_forever else 1):
             for f in self.files:
-                with open(f, mode='r') as fp:
+                with open(f, mode='rb') as fp:
                     self.uut.load_awg(fp.read())
                 yield f 
             
