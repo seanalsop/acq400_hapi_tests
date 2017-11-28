@@ -25,7 +25,7 @@ def configure_bm(args):
         u.s1.RTM_TRANSLEN = args.rtm_translen if args.rgm == 'RTM' else 0
         u.s1.es_enable  = args.es_enable
         u.s0.set_knob('SIG_SRC_TRG_1', 'GPG1' if args.gpg == 'on' and args.dx == 'd1' else 'STRIG')
-        u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'EXT')
+        u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'HDMI' if args.hdmi_slave == 'yes' else 'EXT')
         u.s0.set_arm = 1
 
     for u in uuts:
@@ -50,6 +50,7 @@ def run_main():
     parser.add_argument('--rtm_translen', default=1234, type=int, help='transient length')
     parser.add_argument('--post', default=100000, type=int, help='shot length')
     parser.add_argument('--trg', default='1,0,1', type=str, help='shot trigger triplet')
+    parser.add_argument('--hdmi_slave', default='no', type=str, help='no: use FPTRG, yes: use HDMI trg on d0')
     parser.add_argument('--es_enable', default=1, type=int, help='0 disables Event Signature')
     parser.add_argument('--trace', default=0, type=int, help='1: enable command trace')
     parser.add_argument('uuts', nargs='+', help="uut")
