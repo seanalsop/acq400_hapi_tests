@@ -25,7 +25,7 @@ def configure_bm(args):
         u.s1.RTM_TRANSLEN = args.rtm_translen if args.rgm == 'RTM' else 0
         u.s1.es_enable  = args.es_enable
         u.s0.set_knob('SIG_SRC_TRG_1', 'GPG1' if args.gpg == 'on' and args.dx == 'd1' else 'STRIG')
-        u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'HDMI' if args.hdmi_slave == 'yes' else 'EXT')
+        u.s0.set_knob('SIG_SRC_TRG_0', 'GPG0' if args.gpg == 'on' and args.dx == 'd0' else 'HDMI_TRG' if args.hdmi_slave == 'yes' else 'EXT')
         u.s0.set_arm = 1
 
     for u in uuts:
@@ -34,6 +34,7 @@ def configure_bm(args):
     if args.trg == '1,1,1':
         for u in uuts:
             u.s0.soft_trigger
+    
 
     # warning: this is a RACE for the case of a free-running trigger and multiple UUTs
     if args.gpg == 'on':
