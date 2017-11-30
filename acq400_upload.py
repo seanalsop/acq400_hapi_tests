@@ -23,6 +23,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import argparse
+import re
+import time
 
 from subprocess import call
 
@@ -42,14 +44,26 @@ def upload(args):
     shot_controller = acq400_hapi.ShotController(uuts)
 
     if args.remote_trigger:
-        ta = ActionScript(args.remote_trigger)
+        trigger_action = ActionScript(args.remote_trigger)
         st = None
     else:
-        ta = None
+        trigger_action = None
         st = SOFT_TRIGGER
     try:  
         if args.capture:
-            shot_controller.run_shot(soft_trigger = st, remote_trigger = ta)
+            shot_controller.run_shot(soft_trigger = st, remote_trigger = trigger_action)
+        else:
+            state = '99'
+            while state != '0':
+                state = uuts[0].s0.state.split()[0]
+                if state == '1':
+                    if trigger_action:
+                        trigger_action()
+                    elif st:
+                        uut.s0.soft_trigger = '1'
+                else:
+                    print("waiting state:0, current state: {}".format(state))
+                time.sleep(1)
 
         if args.save_data:
             for u in uuts:
@@ -98,7 +112,12 @@ def run_main():
     parser.add_argument('--remote_trigger', default=None, type=str, help="your function to fire trigger")
     parser.add_argument('--channels', default=CHANNELS, type=str, help="comma separated channel list")
     parser.add_argument('uuts', nargs = '+', help="uut[s]")
-    upload(parser.parse_args())
+    args = parser.parse_args()
+    # encourage single ints to become a list
+    if re.search(r'^\d$', args.channels) is not None:
+        args.channels += ','
+        
+    upload(args)
 
 
 # execution starts here
