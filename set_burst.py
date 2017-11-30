@@ -14,9 +14,11 @@ def configure_bm(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts]
 
     for u in uuts:
-        u.s0.GPG_ENABLE = '0'       # needed if running set.burst multiple times
         u.s0.trace      = args.trace
         u.s1.trace      = args.trace
+
+        u.s0.GPG_ENABLE = '0'       # needed if running set.burst multiple times
+        u.clear_counters()          # makes COUNTERS opi easier to read
         u.s0.transient  = 'POST={}'.format(args.post)
         u.s1.trg        = args.trg
         u.s1.RGM        = args.rgm
@@ -31,16 +33,16 @@ def configure_bm(args):
     for u in uuts:
         u.statmon.wait_armed()
 
-    if args.trg == '1,1,1':
-        for u in uuts:
-            u.s0.soft_trigger
-    
-
     # warning: this is a RACE for the case of a free-running trigger and multiple UUTs
     if args.gpg == 'on':
         for u in uuts:
             u.s0.GPG_ENABLE = '1'
         
+    if args.trg == '1,1,1':
+        for u in uuts:
+            u.s0.soft_trigger
+    
+
 
 def run_main():
     parser = argparse.ArgumentParser(description='set_burst mode')    

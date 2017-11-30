@@ -56,13 +56,12 @@ def upload(args):
             state = '99'
             while state != '0':
                 state = uuts[0].s0.state.split()[0]
+                print("state:{}".format(state))
                 if state == '1':
                     if trigger_action:
                         trigger_action()
                     elif st:
                         uut.s0.soft_trigger = '1'
-                else:
-                    print("waiting state:0, current state: {}".format(state))
                 time.sleep(1)
 
         if args.save_data:
