@@ -56,8 +56,10 @@ def run_gpg(args):
     uut.s0.GPG_MODE=args.mode
     if args.disable != 1:
         uut.s0.GPG_ENABLE = '1'
-    
-    if args.clk == 'int':
+   
+    if args.clk == 'notouch':
+        print("leave clk untouched") 
+    elif args.clk == 'int':
         uut.s0.gpg_clk=0,0,0
     else:
         # clk=dX
@@ -71,7 +73,7 @@ def run_gpg(args):
 def run_main():
     parser = argparse.ArgumentParser(description='run_gpg')    
     parser.add_argument('--trg', default='soft', type=str, help="trigger fp|soft")
-    parser.add_argument('--clk', default='int', type=str, help='clk int|dX')
+    parser.add_argument('--clk', default='int', type=str, help='clk int|dX|notouch')
     parser.add_argument('--mode', default='LOOPWAIT', type=str, help='mode')
     parser.add_argument('--disable', default=0, type=int, help='1: disable')
     parser.add_argument('--stl', default='none', type=str, help='stl file')
