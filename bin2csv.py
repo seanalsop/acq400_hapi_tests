@@ -18,27 +18,55 @@ def get_word_type(wtype):
         print("ERROR, undefined word type {}".format(wtype))
         exit(1)
 
-def bin2csv(args):
-    wtype = get_word_type(args.word)
-    for binf in args.binfiles:
-        raw = np.fromfile(binf, wtype)
-        nrows = len(raw)/args.nchan
-        chx = np.reshape(raw, (nrows, args.nchan))
-        basename, extn = os.path.splitext(binf)
-        csvf = "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename)
-        
-        with open(csvf, 'w' ) as fout:
-            writer = csv.writer(fout)
-            for row in range(0, nrows):
-                writer.writerow(chx[row,:])
 
+
+def bin2csv_onesource_manychan(args):     
+    raw = np.fromfile(args.binfiles[0], args.wtype)
+    nrows = len(raw)/args.nchan
+    chx = np.reshape(raw, (nrows, args.nchan))
+        
+    with open(args.csvf, 'w' ) as fout:
+        writer = csv.writer(fout)
+        for row in range(0, nrows):
+            writer.writerow(chx[row,:])
+                
+                
+def bin2csv_many_onechan_sources(args):
+    chx = list()
+    for binf in args.binfiles:
+        chx.append(np.fromfile(binf, args.wtype))
+    lens = [ len(u) for u in chx ]
+    nrows = lens[0]
+    chxx = np.vstack(chx)
+    
+    with open(args.csvf, 'w' ) as fout:
+        writer = csv.writer(fout)
+        for row in range(0, nrows):
+            writer.writerow(chxx[:,row])    
+            
+def bin2csv(args):
+    args.wtype = get_word_type(args.word)
+    if len(args.out) > 0:
+        basename = args.out
+    else:
+        basename, extn = os.path.splitext(args.binfiles[0])        
+    args.csvf = "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename) 
+    
+    if len(args.binfiles) == 1:
+        bin2csv_onesource_manychan(args)
+    else:
+        bin2csv_many_onechan_sources(args)
+        
 def run_main():
     parser = argparse.ArgumentParser(description='bin2csv')
     parser.add_argument('--nchan', default=1, type=int, help="number of channels")
     parser.add_argument('--word', default='int16', help="int16|int32")
     parser.add_argument('--outroot', default='', help="output root directory")
-    parser.add_argument('binfiles', nargs=1, help="file to convert")
+    parser.add_argument('--out', default='', help="explicit output name")
+    parser.add_argument('binfiles', nargs='+', help="file to convert either a single file * nchan or paste multiple files * 1 chan")
     bin2csv(parser.parse_args())
+     
+    
     
 # execution starts here
 
