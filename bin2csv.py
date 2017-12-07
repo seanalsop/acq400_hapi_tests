@@ -24,9 +24,10 @@ def bin2csv(args):
         raw = np.fromfile(binf, wtype)
         nrows = len(raw)/args.nchan
         chx = np.reshape(raw, (nrows, args.nchan))
-        csvf, extn = os.path.splitext(binf)
+        basename, extn = os.path.splitext(binf)
+        csvf = "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename)
         
-        with open("{}./{}.csv".format(args.outroot, csvf), 'w' ) as fout:
+        with open(csvf, 'w' ) as fout:
             writer = csv.writer(fout)
             for row in range(0, nrows):
                 writer.writerow(chx[row,:])
@@ -36,7 +37,7 @@ def run_main():
     parser.add_argument('--nchan', default=1, type=int, help="number of channels")
     parser.add_argument('--word', default='int16', help="int16|int32")
     parser.add_argument('--outroot', default='', help="output root directory")
-    parser.add_argument('binfiles', nargs='+', help="files to convert")
+    parser.add_argument('binfiles', nargs=1, help="file to convert")
     bin2csv(parser.parse_args())
     
 # execution starts here
