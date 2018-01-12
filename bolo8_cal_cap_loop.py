@@ -6,6 +6,7 @@
 
 
 import sys
+import os
 import acq400_hapi
 import argparse
 from MDSplus import *
@@ -23,33 +24,33 @@ def set_next_shot(args, flavour, info):
     while not flavour(sn):
         sn += 1
     for tree in args.uuts:
-        print("Setting %s for %s to shot %d".format(tree, info, sn))
+        print("Setting {} for {} to shot {}".format(tree, info, sn))
         Tree.setCurrent(tree, sn)
     return sn
     
     
 def run_cal1(uut, shot):
-    txt = uut.run_service(acq400.AcqPorts.BOLO8_CAL, eof="END")
-    logfile = os.getenv("%s_path/cal_%d".format(uut.uut, shot), ".")
+    txt = uut.run_service(acq400_hapi.AcqPorts.BOLO8_CAL, eof="END")
+    logfile = os.getenv("{}_path/cal_{}".format(uut.uut, shot), ".")
     with open(logfile, 'w') as log: 
         log.write(txt)
         
     
 
 def run_cal(args, uuts):
-    shot = set_next_shot(uuts, odd, "Cal")
+    shot = set_next_shot(args, odd, "Cal")
     # hmm, running the cal serialised?. not cool, parallelize me ..
     for u in uuts:
         run_cal1(u, shot)
     
 def run_capture(args, uuts):
-    shot = set_next_shot(uuts, even, "Cap")
+    shot = set_next_shot(args, even, "Cap")
     for u in uuts:
-        u.s0.transient = "POST=%d SOFT_TRIGGER=0".format(args.post)
+        u.s0.transient = "POST={} SOFT_TRIGGER=0".format(args.post)
         u.s0.arm = '1'
         u.st_monitor.wait_armed()
         
-    if args.trg = "int":
+    if args.trg == "int":
         # again, not really parallel
         for u in uuts:
             u.so.soft_trigger = '1'
@@ -60,7 +61,7 @@ def run_capture(args, uuts):
 def run_shots(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts] 
     
-    for shot in args.shots:
+    for shot in range(1, args.shots+1):
         run_cal(args, uuts)
         run_capture(args, uuts)
 
