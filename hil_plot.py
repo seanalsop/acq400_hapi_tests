@@ -19,8 +19,7 @@ def store_file(it, rdata, nchan, nsam):
         f.write(rdata)
 
 def plot(it, rdata, nchan, nsam):
-    raw = np.fromstring(rdata, dtype=np.int16)
-    chx = np.reshape(raw, (nsam, nchan))    
+    chx = np.reshape(rdata, (nsam, nchan))    
     for ch in range(0,nchan):
         plt.plot(chx[:,ch])
         
