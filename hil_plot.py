@@ -59,10 +59,9 @@ def run_shots(args):
             rdata = uut.read_chan(0, args.post*args.nchan)            
             store(ii, rdata, args.nchan, args.post)
             if args.plot > 0 :
-                if args.plot == 1:
-                    plt.cla()
-                    plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
-                    plot(ii, rdata, args.nchan, args.post)
+                plt.cla()
+                plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
+                plot(ii, rdata, args.nchan, args.post)
         if args.wait_user:
             raw_input("hit return to continue")              
 
