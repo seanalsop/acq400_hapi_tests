@@ -83,3 +83,33 @@ class RainbowGen:
                 self.uut.load_awg((aw1*(2**15-1)/10).astype(np.int16))           
                 print("loaded array ", aw1.shape)
                 yield ch
+
+
+class ZeroOffset:   
+    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 20):
+        self.uut = uut
+        self.nchan = nchan
+        self.nsam = nsam
+        self.run_forever = run_forever               
+        self.aw = np.zeros((nsam,nchan))
+        self.finished = 0
+        self.KFB = gain
+        set.passvalue = passvalue
+
+    def feedback(self, fb_data):
+        finished = 1
+        for ch in range(0, self.nchan):
+            current = np.mean(self.aw[:,ch])
+            actual = np.mean(fb_data[50:,ch])
+            newset = current - actual * self.KFB
+            print("current {} actual {} newsp {} ".format(current, actual, newset))
+            self.aw[:,ch] = newset
+            if newset - current != 0:
+                finished = 0
+        self.finished = finished
+        
+    def load(self):
+        while not self.finished:
+            self.uut.load_awg(self.aw.astype(np.int16))           
+            print("loaded array ", self.aw.shape)
+            yield self
