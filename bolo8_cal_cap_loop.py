@@ -61,15 +61,15 @@ def set_next_shot(args, flavour, info):
         Tree.setCurrent(tree, sn)
         Tree(tree, -1).createPulse(sn)
     return sn
-    
-    
+
+
 def run_cal1(uut, shot):
     txt = uut.run_service(acq400_hapi.AcqPorts.BOLO8_CAL, eof="END")
     logfile = "{}/cal_{}".format(os.getenv("{}_path".format(uut.uut), "."), shot)
     with open(logfile, 'w') as log: 
         log.write(txt)
-        
-    
+
+
 
 def run_cal(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts] 
@@ -79,7 +79,7 @@ def run_cal(args):
         run_cal1(u, shot)
     # unfortunately this sleep seems to be necessary, else subsequent shot HANGS at 21760
     time.sleep(2)
-    
+
 def run_capture(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts] 
     shot = set_next_shot(args, even, "Cap")
@@ -88,30 +88,30 @@ def run_capture(args):
         u.s0.transient = "POST={} SOFT_TRIGGER=0".format(args.post)
     for u in uuts:
         u.s0.set_arm = '1'
-        
+
     for u in uuts:
         u.statmon.wait_armed()
-        
+
     if args.trg == "int":
         # again, not really parallel
         for u in uuts:
             print("trigger")
             u.s0.soft_trigger = '1'
-    
+
     for u in uuts:
         u.statmon.wait_stopped()
-        
-        
-def run_shots(args):
-    
-    for shot in range(1, args.shots+1):
-	print("Cycle {}".format(shot))
-	if args.cal:
-            run_cal(args)
-	if args.cap:
-	    run_capture(args)
 
-    
+
+def run_shots(args):
+
+    for shot in range(1, args.shots+1):
+        print("Cycle {}".format(shot))
+        if args.cal:
+            run_cal(args)
+        if args.cap:
+            run_capture(args)
+
+
 def run_main():
     parser = argparse.ArgumentParser(description='bolo8_cal_cap_loop')
     parser.add_argument('--cap', default=1, type=int, help="capture")
