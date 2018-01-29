@@ -41,6 +41,8 @@ def set_hdmi_master(uut):
     uut.s0.SIG_SYNC_OUT_CLK_DX  = 'd0'      # 
     uut.s0.SIG_SYNC_OUT_TRG     = 'TRG'     # SOFT TRIGGER d1
     uut.s0.SIG_SYNC_OUT_TRG_DX  = 'd1'
+#    uut.s0.SIG_SYNC_OUT_TRG     = 'GPG'     # trigger from gpg OUT
+#    uut.s0.SIG_SYNC_OUT_TRG_DX  = 'd0'
     uut.s0.SIG_SYNC_OUT_SYNC    = 'GPG'     # GPG d1
     uut.s0.SIG_SYNC_OUT_SYNC_DX = 'd1'      # GPG 0x2
     uut.s0.SIG_SYNC_OUT_GPIO    = 'GPG'
