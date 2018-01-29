@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Harware In Loop : load AO data,run a shot, get AI data, repeat.
+# Hardware In Loop : load AO data,run a shot, get AI data, repeat.
 # upload to AWG and optionally run a capture.
 # data for upload is either File (host-local data file) or Rainbow, a test pattern.
 # assumes that clocking has been pre-assigned.
