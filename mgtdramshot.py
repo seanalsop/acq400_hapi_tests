@@ -3,6 +3,7 @@
 # assumes that clocking has been pre-assigned.
 
 import sys
+import datetime
 import acq400_hapi
 import awg_data
 import argparse
@@ -22,7 +23,10 @@ class UploadFilter:
         LOG.write("{}\n".format(st))
         
         if self.okregex.search(st) != None:
-            sys.stdout.write('.')
+	    if self.line%10 != 0:
+                sys.stdout.write('.')
+            else:
+                sys.stdout.write("{}".format(self.line/10))
             sys.stdout.flush()
             self.line += 1
             if self.line > 100:
@@ -34,7 +38,10 @@ class UploadFilter:
             print(">{}".format(st))
             self.line = 0            
    
-    
+   
+def set_simulate(uut, enable):
+    for s in uut.modules:
+        uut.modules[s].simulate = '1' if enable else '0'       
 
 def run_shot(uut, args):
 	# always capture over. The offload is zero based anyway, so add another one
@@ -42,7 +49,13 @@ def run_shot(uut, args):
     uut.run_mgt()
     uut.s14.mgt_offload = args.offloadblocks if args.offloadblocks != 'capture' \
         else '0-{}'.format(args.captureblocks)
+	
+    t1 = datetime.datetime.now()
     uut.run_mgt(UploadFilter())
+    ttime = datetime.datetime.now()-t1
+    mb = args.captureblocks*4
+    print("upload {} MB done in {} seconds, {} MB/s\n".\
+		format(mb, ttime, mb/ttime.seconds))
     if args.validate != 'no':
 	cmd = "{} {}".format(args.validate, uut.uut)
 	print "run \"{}\"".format(cmd)
@@ -56,10 +69,14 @@ def run_shots(args):
     LOG = open("mgtdramshot-{}.log".format(args.uut[0]), "w")
     uut = acq400_hapi.Acq2106(args.uut[0], has_mgtdram=True)
     uut.s14.mgt_taskset = '1'
+    set_simulate(uut, args.simulate)
     
     for ii in range(0, args.loop):
-        print("shot: %d" % (ii))
+	t1 = datetime.datetime.now()
+        print("shot: {} {}".format(ii, t1.strftime("%Y%m%d %H:%M:%S")))
         run_shot(uut, args)
+	t2 = datetime.datetime.now()
+	print("done in {} seconds\n\n".format((t2-t1).seconds))
         
         if args.wait_user:
             raw_input("hit return to continue")
@@ -68,11 +85,12 @@ def run_shots(args):
 def run_main():
     parser = argparse.ArgumentParser(description='acq2106 mgtdram test')    
     parser.add_argument('--loop', type=int, default=1, help="loop count")     
-    parser.add_argument('--captureblocks', type=str, default="2000", help='number of 4MB blocks to capture')
+    parser.add_argument('--captureblocks', type=int, default="2000", help='number of 4MB blocks to capture')
     parser.add_argument('--offloadblocks', type=str, default="capture", help='block list to upload nnn-nnn')
     parser.add_argument('--validate', type=str, default='no', help='program to validate data')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('--wait_user', type=int, default=0, help='1: force user input each shot')
+    parser.add_argument('--simulate', type=int, default=1, help='enable simulate (ramp) on modules')
     parser.add_argument('uut', nargs=1, help="uut ")
     run_shots(parser.parse_args())
 
