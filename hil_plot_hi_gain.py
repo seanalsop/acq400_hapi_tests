@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Hardware In Loop : load AO data,run a shot, get AI data, repeat.
+# Hardware In Loop : Hi Gain. Trim AO's until measured loopback is zero 
 # upload to AWG and optionally run a capture.
 # data for upload is either File (host-local data file) or Rainbow, a test pattern.
 # assumes that clocking has been pre-assigned.
@@ -10,13 +10,6 @@ import awg_data
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-
-def store_file(it, rdata, nchan, nsam):
-    fn = 'DATA/ai%04d.dat' % (it)
-    print("store_file {}".format(fn))
-    
-    with open(fn, 'wb') as f:
-        f.write(rdata)
 
 def plot(it, rdata, nchan, nsam):
     chx = np.reshape(rdata, (nsam, nchan))    
@@ -35,44 +28,46 @@ def run_shots(args):
     uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=%d' % \
             (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
 
-    if args.aochan == 0:
-        args.aochan = args.nchan
-        
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
-
-    if args.files != "":
-        work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
-    else:
-        work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
-        
-    store = store_file
-    loader = work.load()
-    for ii in range(0, args.loop):
-        print("shot: %d" % (ii))
-        f = loader.next()
-        print("Loaded %s" % (f))
-        uut.run_oneshot()
-
-        if args.store:
+    
+    work = awg_data.ZeroOffset(uut, args.nchan, args.awglen, gain = args.gain) 
+    
+    try:
+        loader = work.load()
+        ii = 0
+        while loader.next():        
+            uut.run_oneshot()        
             print("read_chan %d" % (args.post*args.nchan))
-            rdata = uut.read_chan(0, args.post*args.nchan)            
-            store(ii, rdata, args.nchan, args.post)
+            rdata = uut.read_chan(0, args.post*args.nchan)                        
             if args.plot > 0 :
                 plt.cla()
-                plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
+                title = "AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else "")
+                print(title)
+                plt.title(title)
                 plot(ii, rdata, args.nchan, args.post)
-        if args.wait_user:
-            raw_input("hit return to continue")              
+                if args.wait_user:
+                    raw_input("hit return to continue") 
+                    if uut.s0.data32 == '1':
+                        print("scale rdata >> 2")
+                        rdata = rdata >> 2
+                        work.feedback(np.reshape(rdata, (args.post, args.nchan)))
+                        ii += 1
+    except StopIteration:
+        print("offset zeroed within bounds")
+    except acq400_hapi.acq400.Acq400.AwgBusyError:
+        print("AwgBusyError, try a soft trigger and quit, then re-run me")
+        uut.s0.soft_trigger = '1'
+        
 
 
 def run_main():
-    parser = argparse.ArgumentParser(description='acq1001 HIL demo')
+    parser = argparse.ArgumentParser(description='acq1001 HIL zero offset demo')
+    parser.add_argument('--gain', type=float, default=0.1, help="set gain constant")
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--loop', type=int, default=1, help="loop count")        
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
-    parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
-    parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
+    parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')    
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')

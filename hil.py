@@ -13,7 +13,7 @@ def store_file(it, rdata, nchan, nsam):
     fn = 'DATA/ai%04d.dat' % (it)
     print("store_file {}".format(fn))
     
-    with open(fn, 'w') as f:        
+    with open(fn, 'wb') as f:
         f.write(rdata)
 
 def run_shots(args):

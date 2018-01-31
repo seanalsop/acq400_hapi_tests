@@ -10,7 +10,7 @@ class RunsFiles:
     def load(self):
         for ii in range(99999 if self.run_forever else 1):
             for f in self.files:
-                with open(f, mode='r') as fp:
+                with open(f, mode='rb') as fp:
                     self.uut.load_awg(fp.read())
                 yield f 
             
@@ -83,3 +83,65 @@ class RainbowGen:
                 self.uut.load_awg((aw1*(2**15-1)/10).astype(np.int16))           
                 print("loaded array ", aw1.shape)
                 yield ch
+
+
+class ZeroOffset:   
+    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1):
+        self.uut = uut
+        self.nchan = nchan
+        self.nsam = nsam
+        self.run_forever = run_forever               
+        self.aw = np.zeros((nsam,nchan))
+        self.current = np.zeros(nchan)
+        self.finished = 0
+        self.in_bounds = False
+        self.KFB = gain
+        self.passvalue = passvalue/gain 
+        self.defs = "DATA/{}.npy".format(uut.uut)
+
+        try:
+            self.read_defaults()
+            for ch in range(0, self.nchan):            
+                self.aw[:,ch] = self.current[ch]        
+        except IOError:
+            print("no defaults")
+
+    def feedback(self, fb_data):
+        actual = np.mean(fb_data[50:,:], 0)
+        errmax = max(abs(actual))
+        if  errmax < self.passvalue:
+            print("maximum error {} is within bounds {}, save it".format(errmax, self.passvalue))
+            self.store_defaults()
+            self.in_bounds = True
+        else:
+            print("maximum error {}".format(errmax))
+            
+        self.current = np.mean(self.aw, 0)        
+        newset = self.current - actual * self.KFB
+                
+        for ch in range(0, self.nchan):            
+            self.aw[:,ch] = newset[ch]
+
+        
+    def load(self):
+        while not self.finished:
+            self.uut.load_awg(self.aw.astype(np.int16))           
+            print("loaded array ", self.aw.shape)
+            if self.in_bounds:
+                # plot this one, drop out next time
+                self.finished = True
+            yield self
+
+
+    def read_defaults(self):        
+        print("read_defaults {}".format(self.defs))
+        with open(self.defs, 'r') as fp:
+            self.current = np.load(fp)
+            print(self.current)
+        
+    def store_defaults(self):
+        print("store_defaults {}".format(self.defs))
+        print(self.current)
+        with open(self.defs, 'w') as fp:
+            np.save(fp, self.current)
+        

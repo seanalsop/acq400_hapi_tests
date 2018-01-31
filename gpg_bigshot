@@ -1,0 +1,20 @@
+#!/bin/bash
+# composite example
+# load the GPG
+# configure ACQ1001+ACQ480 for burst mode, ARM, and enable GPG
+# remote trigger the capture, wait for completion, upload
+# uploaded data suitable for plot with kst/dirfile
+# hdmi_master_trg.py : toggles trigger on demand from an external HDMI master 
+
+POST=${1:-30000000}
+UUT=acq1001_105
+TRG=acq1001_315
+
+REMTRG="./run_gpg.py --trace 1 --stl STL/rcp_stim.stl  --disable 1 --mode=ONCE --trg=softonce $TRG --clk=notouch"
+./run_gpg.py --trace 1 --stl STL/rcp.stl  --disable 1 --mode=ONCE --trg=fp $UUT --clk=notouch
+./set_burst.py --trace 1 --rgm RGM --dx d1 --trg=1,1,1 --gpg on --post=$POST --hdmi_slave=yes --es_enable 1 --demux=1 $UUT
+#./set_burst.py --trace 1 --rgm RGM --dx d1 --trg=1,1,1 --gpg on --post=40000000 --hdmi_slave=yes --es_enable 1 --demux=0 $UUT
+time  ./acq400_upload.py --channels=2,3 --trace_upload=1 --capture=0 --remote_trigger="$REMTRG" --save_data=BIGSHOT $UUT
+
+
+

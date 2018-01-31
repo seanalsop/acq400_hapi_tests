@@ -1,0 +1,7 @@
+# get hardware MODEL from sites 1 + 2
+# ignore blank lines
+
+get.site 0 MODEL
+get.site 1 MODEL
+
+
