@@ -10,11 +10,16 @@ import awg_data
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import subprocess
+
+current_file = "nofile"
 
 def store_file(it, rdata, nchan, nsam):
+    global current_file
     fn = 'DATA/ai%04d.dat' % (it)
     print("store_file {}".format(fn))
-    
+    current_file = fn
     with open(fn, 'wb') as f:
         f.write(rdata)
 
@@ -62,9 +67,39 @@ def run_shots(args):
                 plt.cla()
                 plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
                 plot(ii, rdata, args.nchan, args.post)
-        if args.wait_user:
-            raw_input("hit return to continue")              
+        if args.wait_user is not None:
+	    args.wait_user()
 
+
+def is_exe(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+class ExecFile:
+    def __init__(self, fname):
+        self.fname = fname
+    def __call__(self):
+    	global current_file
+	args = [self.fname, current_file]
+	print("subprocess.call({})".format(args))
+	subprocess.call(args, stdout=sys.stdout, shell=False)
+
+class Integer:
+    def __init__(self, value):
+        self.value = int(value)
+    def __call__(self):
+	return self.value
+
+class Prompt:
+    def __call__(self):
+        raw_input("hit return to continue")              
+        
+        
+def select_prompt_or_exec(value):
+    if is_exe(value):
+	return ExecFile(value)
+    else:
+        if int(value) == 1:
+            return Prompt
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
@@ -77,7 +112,7 @@ def run_main():
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('--plot', type=int, default=1, help='--plot 1 : plot data, 2: persistent')
-    parser.add_argument('--wait_user', type=int, default=0, help='1: force user input each shot')
+    parser.add_argument('--wait_user', type=select_prompt_or_exec, default=0, help='1: force user input each shot')
     parser.add_argument('uuts', nargs=1, help="uut ")
     run_shots(parser.parse_args())
 
