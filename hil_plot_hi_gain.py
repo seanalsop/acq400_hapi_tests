@@ -11,6 +11,13 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
+def store_file(it, rdata, nchan, nsam):
+    fn = 'DATA/ai%04d.dat' % (it)
+    print("store_file {}".format(fn))
+    
+    with open(fn, 'wb') as f:
+        f.write(rdata)
+
 def plot(it, rdata, nchan, nsam):
     chx = np.reshape(rdata, (nsam, nchan))    
     for ch in range(0,nchan):
@@ -31,7 +38,9 @@ def run_shots(args):
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
     
-    work = awg_data.ZeroOffset(uut, args.nchan, args.awglen, gain = args.gain) 
+    work = awg_data.ZeroOffset(uut, args.nchan, args.awglen, aochan = int(args.aochan), 
+                               gain = args.gain, passvalue = args.passvalue) 
+    store = store_file
     
     try:
         loader = work.load()
@@ -46,13 +55,14 @@ def run_shots(args):
                 print(title)
                 plt.title(title)
                 plot(ii, rdata, args.nchan, args.post)
+                store(ii, rdata, args.nchan, args.post)
                 if args.wait_user:
                     raw_input("hit return to continue") 
                     if uut.s0.data32 == '1':
-                        print("scale rdata >> 2")
-                        rdata = rdata >> 2
-                        work.feedback(np.reshape(rdata, (args.post, args.nchan)))
-                        ii += 1
+                        print("scale rdata >> 16")
+                        rdata = rdata >> 16
+                    work.feedback(np.reshape(rdata, (args.post, args.nchan)))
+                    ii += 1
     except StopIteration:
         print("offset zeroed within bounds")
     except acq400_hapi.acq400.Acq400.AwgBusyError:
@@ -69,6 +79,8 @@ def run_main():
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')    
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
+    parser.add_argument('--passvalue', type=int, default=1, help='acceptable error')
+    parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')
     parser.add_argument('--trg', default="int", help='trg "int|ext rising|falling"')
     parser.add_argument('--plot', type=int, default=1, help='--plot 1 : plot data, 2: persistent')
