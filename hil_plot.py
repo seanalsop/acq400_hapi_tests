@@ -46,7 +46,9 @@ def run_shots(args):
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
 
-    if args.files != "":
+    if args.pulse != None:
+        work = awg_data.Pulse(uut, args.aochan, args.awglen, args.pulse.split(','))
+    elif args.files != "":
         work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
     else:
         work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
@@ -104,6 +106,7 @@ def select_prompt_or_exec(value):
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
     parser.add_argument('--files', default="", help="list of files to load")
+    parser.add_argument('--pulse', help="interval,duration,scan: + : each channel in turn")
     parser.add_argument('--loop', type=int, default=1, help="loop count")        
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
