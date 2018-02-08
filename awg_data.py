@@ -84,6 +84,34 @@ class RainbowGen:
                 print("loaded array ", aw1.shape)
                 yield ch
 
+class Pulse:
+    def generate(self):
+        zset = np.zeros(self.interval)
+        pset = zset
+        pset[self.interval-1-self.flat_top:] = 1
+        
+        for seg in range(1, self.nsam/self.interval):
+            x1 = seg*self.interval
+            x2 = x1 + self.interval
+            for ch in range(self.nchan):
+	        if seg%self.nchan == ch:
+                    self.aw[x1:x2,ch] = pset
+
+            
+    def __init__(self, uut, nchan, nsam, args = (1000,10)):
+        self.uut = uut
+        self.nchan = nchan
+        self.nsam = nsam
+        (self.interval, self.flat_top) = [ int(u) for u in args ]
+	print( "self.interval {}".format(self.interval)) 
+        self.aw = np.zeros((nsam,nchan))
+        self.generate()
+
+    def load(self):
+        self.uut.load_awg((self.aw*(2**15-1)/10).astype(np.int16))
+	yield self
+    
+
 
 class ZeroOffset:   
     def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1, aochan = 0):
