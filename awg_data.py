@@ -86,12 +86,18 @@ class RainbowGen:
 
 
 class ZeroOffset:   
-    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1):
+    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1, aochan = 0):
+        print("ZeroOffset")
         self.uut = uut
         self.nchan = nchan
         self.nsam = nsam
-        self.run_forever = run_forever               
-        self.aw = np.zeros((nsam,nchan))
+        self.run_forever = run_forever
+        if aochan == 0:
+            aochan = nchan
+        self.aw = np.zeros((nsam,aochan))
+        for ch in range(0, aochan):
+            self.aw[:,ch] = ch
+        self.aw.astype('int16').tofile("awg.dat")
         self.current = np.zeros(nchan)
         self.finished = 0
         self.in_bounds = False
@@ -116,11 +122,15 @@ class ZeroOffset:
         else:
             print("maximum error {}".format(errmax))
             
-        self.current = np.mean(self.aw, 0)        
+        self.current = np.mean(self.aw, 0)[0:self.nchan]
         newset = self.current - actual * self.KFB
-                
+        print("newset {}".format(newset))        
         for ch in range(0, self.nchan):            
             self.aw[:,ch] = newset[ch]
+            
+        self.aw.astype('int16').tofile("awg.dat")
+        
+            
 
         
     def load(self):
