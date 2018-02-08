@@ -1,5 +1,6 @@
 
 import numpy as np
+import os
 
 class RunsFiles:
     def __init__(self, uut, files, run_forever=False):
@@ -132,11 +133,13 @@ class ZeroOffset:
         self.KFB = gain
         self.passvalue = passvalue/gain 
         self.defs = "DATA/{}.npy".format(uut.uut)
+        self.identity_pattern = bool(int(os.getenv("IDENTITY_PATTERN", 0)))
 
         try:
             self.read_defaults()
-            for ch in range(0, self.nchan):            
-                self.aw[:,ch] = self.current[ch]        
+            if not self.identity_pattern:
+                for ch in range(0, self.nchan):            
+                    self.aw[:,ch] = self.current[ch]        
         except IOError:
             print("no defaults")
 
@@ -153,8 +156,9 @@ class ZeroOffset:
         self.current = np.mean(self.aw, 0)[0:self.nchan]
         newset = self.current - actual * self.KFB
         print("newset {}".format(newset))        
-        for ch in range(0, self.nchan):            
-            self.aw[:,ch] = newset[ch]
+        if not self.identity_pattern:
+            for ch in range(0, self.nchan):            
+                self.aw[:,ch] = newset[ch]
             
         self.aw.astype('int16').tofile("awg.dat")
         
