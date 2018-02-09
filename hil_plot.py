@@ -27,22 +27,22 @@ def plot(it, rdata, nchan, nsam):
     chx = np.reshape(rdata, (nsam, nchan))    
     for ch in range(0,nchan):
         plt.plot(chx[:,ch])
-        
+
     plt.show()
     plt.pause(0.0001)
-    
+
 def run_shots(args):
     uut = acq400_hapi.Acq400(args.uuts[0])
     acq400_hapi.cleanup.init()
     if args.plot:
         plt.ion()
-    
+
     uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=%d' % \
-            (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
+        (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
 
     if args.aochan == 0:
         args.aochan = args.nchan
-        
+
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
 
@@ -52,7 +52,7 @@ def run_shots(args):
         work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
     else:
         work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
-        
+
     store = store_file
     loader = work.load()
     for ii in range(0, args.loop):
@@ -70,7 +70,7 @@ def run_shots(args):
                 plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
                 plot(ii, rdata, args.nchan, args.post)
         if args.wait_user is not None:
-	    args.wait_user()
+            args.wait_user()
 
 
 def is_exe(fpath):
@@ -80,25 +80,25 @@ class ExecFile:
     def __init__(self, fname):
         self.fname = fname
     def __call__(self):
-    	global current_file
-	args = [self.fname, current_file]
-	print("subprocess.call({})".format(args))
-	subprocess.call(args, stdout=sys.stdout, shell=False)
+        global current_file
+        args = [self.fname, current_file]
+        print("subprocess.call({})".format(args))
+        subprocess.call(args, stdout=sys.stdout, shell=False)
 
 class Integer:
     def __init__(self, value):
         self.value = int(value)
     def __call__(self):
-	return self.value
+        return self.value
 
 class Prompt:
     def __call__(self):
         raw_input("hit return to continue")              
-        
-        
+
+
 def select_prompt_or_exec(value):
     if is_exe(value):
-	return ExecFile(value)
+        return ExecFile(value)
     else:
         if int(value) == 1:
             return Prompt
