@@ -101,7 +101,7 @@ def select_prompt_or_exec(value):
         return ExecFile(value)
     else:
         if int(value) == 1:
-            return Prompt
+            return Prompt()
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
