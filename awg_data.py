@@ -2,6 +2,24 @@
 import numpy as np
 import os
 
+
+class AwgDefaults:
+    def __init__(self, uut_name):
+	self.defs = "DATA/{}.npy".format(uut_name)
+
+    def read_defaults(self):        
+	print("read_defaults {}".format(self.defs))
+	with open(self.defs, 'r') as fp:
+	    current = np.load(fp)
+	print("read_defaults {} {}".format(self.defs, current))
+	return current
+
+    def store_defaults(self, current):
+	print("store_defaults {} {}".format(self.defs, current))
+	with open(self.defs, 'w') as fp:
+	    np.save(fp, current)
+
+
 class RunsFiles:
     def __init__(self, uut, files, run_forever=False):
         self.uut = uut
@@ -15,6 +33,7 @@ class RunsFiles:
                     self.uut.load_awg(fp.read())
                 yield f 
             
+
     
 class SinGen:
     NCYCLES = 5
@@ -64,16 +83,26 @@ class RainbowGen:
         xx = np.array(range(-nsam/2-xoff,nsam/2-xoff))*NCYCLES*2*np.pi/nsam
         return [ np.sin(x)/x if x != 0 else 1 for x in xx ]
     
-    def __init__(self, uut, nchan, nsam, run_forever=False):
+    def __init__(self, uut, nchan, nsam, run_forever=False, ao0 = 0):
         self.uut = uut
         self.nchan = nchan
         self.nsam = nsam
+	self.ao0 = ao0
         self.run_forever = run_forever
         self.sw = self.sin()        
         self.aw = np.zeros((nsam,nchan))
+	self.defs = AwgDefaults(uut.uut)
+	self.gain = 1.0
+	try:   
+	    self.current = self.defs.read_defaults()
+	    for ch in range(0, self.nchan):            
+		self.aw[:,self.ao0+ch] = self.current[ch]    
+	except IOError:
+	    self.current = np.zeros(self.nchan)
+	    print("no defaults")
+	    
         for ch in range(nchan):
             self.aw[:,ch] = self.rainbow(ch)            
-#            self.aw[:,ch] = self.rainbow(1)
 
     def load(self):
         for ii in range(99999 if self.run_forever else 1):
@@ -81,7 +110,10 @@ class RainbowGen:
                 aw1 = np.copy(self.aw)
                 aw1[:,ch] = np.add(np.multiply(self.sinc(ch),5),2)
                 print("loading array ", aw1.shape)
-                self.uut.load_awg((aw1*(2**15-1)/10).astype(np.int16))           
+		awr = (aw1*(2**15-1)/10)/self.gain
+		for chx in range(self.nchan):
+		    awr[:,chx] += self.current[chx]
+                self.uut.load_awg(awr.astype(np.int16))           
                 print("loaded array ", aw1.shape)
                 yield ch
 
@@ -114,6 +146,7 @@ class Pulse:
     
 
 
+    
 class ZeroOffset:   
     def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1, aochan = 0, ao0 = 0):
         print("ZeroOffset")
@@ -191,19 +224,3 @@ class ZeroOffset:
 
 
 
-class AwgDefaults:
-    def __init__(self, uut_name):
-        self.defs = "DATA/{}.npy".format(uut_name)
-
-    def read_defaults(self):        
-        print("read_defaults {}".format(self.defs))
-        with open(self.defs, 'r') as fp:
-            current = np.load(fp)
-        print("read_defaults {} {}".format(self.defs, current))
-        return current
-        
-    def store_defaults(self, current):
-        print("store_defaults {} {}".format(self.defs, current))
-        with open(self.defs, 'w') as fp:
-            np.save(fp, current)
-        
