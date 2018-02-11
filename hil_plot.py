@@ -45,13 +45,29 @@ def run_shots(args):
 
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
-
+    for sx in uut.modules:
+        if uut.modules[sx].data32 == '1':
+            if uut.modules[sx].adc_18b == '1':
+                rshift = 14
+            else:
+                rshift = 16
+        else:
+            rshift = 0
+        break
     if args.pulse != None:
         work = awg_data.Pulse(uut, args.aochan, args.awglen, args.pulse.split(','))
     elif args.files != "":
         work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
     else:
         work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
+        if args.range != "default":
+            for sx in uut.modules:
+                print("setting GAIN_ALL {}".format(args.range))
+                uut.modules[sx].GAIN_ALL = args.range
+                break
+            gain = 10/float(args.range.strip('V'))
+            print("setting work.gain {}".format(gain))
+            work.gain = gain
 
     store = store_file
     loader = work.load()
@@ -68,7 +84,7 @@ def run_shots(args):
             if args.plot > 0 :
                 plt.cla()
                 plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
-                plot(ii, rdata, args.nchan, args.post)
+                plot(ii, np.right_shift(rdata, rshift), args.nchan, args.post)                
         if args.wait_user is not None:
             args.wait_user()
 
@@ -107,7 +123,8 @@ def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--pulse', help="interval,duration,scan: + : each channel in turn")
-    parser.add_argument('--loop', type=int, default=1, help="loop count")        
+    parser.add_argument('--loop', type=int, default=1, help="loop count")
+    parser.add_argument('--range', default="default", help="set range on ADC")
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')
     parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
