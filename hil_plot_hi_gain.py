@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 def store_file(it, rdata, nchan, nsam):
     fn = 'DATA/ai%04d.dat' % (it)
     print("store_file {}".format(fn))
-    
+
     with open(fn, 'wb') as f:
         f.write(rdata)
 
@@ -22,18 +22,18 @@ def plot(it, rdata, nchan, nsam):
     chx = np.reshape(rdata, (nsam, nchan))    
     for ch in range(0,nchan):
         plt.plot(chx[:,ch])
-        
+
     plt.show()
     plt.pause(0.0001)
-    
+
 def run_shots(args):
     uut = acq400_hapi.Acq400(args.uuts[0])
     acq400_hapi.cleanup.init()
     if args.plot:
         plt.ion()
-    
+
     uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=%d' % \
-            (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
+        (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
 
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
@@ -50,7 +50,7 @@ def run_shots(args):
     work = awg_data.ZeroOffset(uut, args.nchan, args.awglen, aochan = int(args.aochan), 
                                gain = args.gain, passvalue = args.passvalue, ao0 = args.ao0) 
     store = store_file
-    
+
     try:
         loader = work.load()
         ii = 0
@@ -68,7 +68,7 @@ def run_shots(args):
                 if args.wait_user:
                     key = raw_input("hit return to continue, q for quit").strip()
                     if key == 'q':
-			work.user_quit = True
+                        work.user_quit = True
                     print("raw_input {}".format(key))
                     if uut.s0.data32 == '1':
                         print("scale rdata >> 16")
@@ -80,7 +80,7 @@ def run_shots(args):
     except acq400_hapi.acq400.Acq400.AwgBusyError:
         print("AwgBusyError, try a soft trigger and quit, then re-run me")
         uut.s0.soft_trigger = '1'
-        
+
 
 
 def run_main():
