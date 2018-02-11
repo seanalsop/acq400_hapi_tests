@@ -37,9 +37,18 @@ def run_shots(args):
 
     for sx in uut.modules:
         uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
-    
+    for sx in uut.modules:
+        if uut.modules[sx].data32 == '1':
+            if uut.modules[sx].adc_18b == '1':
+                rshift = 14
+            else:
+                rshift = 16
+        else:
+            rshift = 0
+        break
+
     work = awg_data.ZeroOffset(uut, args.nchan, args.awglen, aochan = int(args.aochan), 
-                               gain = args.gain, passvalue = args.passvalue) 
+                               gain = args.gain, passvalue = args.passvalue, ao0 = args.ao0) 
     store = store_file
     
     try:
@@ -54,10 +63,13 @@ def run_shots(args):
                 title = "AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else "")
                 print(title)
                 plt.title(title)
-                plot(ii, rdata, args.nchan, args.post)
+                plot(ii, np.right_shift(rdata, rshift), args.nchan, args.post)
                 store(ii, rdata, args.nchan, args.post)
                 if args.wait_user:
-                    raw_input("hit return to continue") 
+                    key = raw_input("hit return to continue, q for quit").strip()
+                    if key == 'q':
+			work.user_quit = True
+                    print("raw_input {}".format(key))
                     if uut.s0.data32 == '1':
                         print("scale rdata >> 16")
                         rdata = rdata >> 16
@@ -79,6 +91,7 @@ def run_main():
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
     parser.add_argument('--nchan', type=int, default=32, help='channel count for pattern')    
     parser.add_argument('--awglen', type=int, default=2048, help='samples in AWG waveform')
+    parser.add_argument('--ao0', type=int, default=0, help='first ao in set')
     parser.add_argument('--passvalue', type=int, default=1, help='acceptable error')
     parser.add_argument('--aochan', type=int, default=0, help='AO channel count, if different to AI (it happens)')
     parser.add_argument('--post', type=int, default=100000, help='samples in ADC waveform')

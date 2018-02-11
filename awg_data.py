@@ -115,7 +115,7 @@ class Pulse:
 
 
 class ZeroOffset:   
-    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1, aochan = 0):
+    def __init__(self, uut, nchan, nsam, run_forever=False, gain = 0.1, passvalue = 1, aochan = 0, ao0 = 0):
         print("ZeroOffset")
         self.uut = uut
         self.nchan = nchan
@@ -134,14 +134,23 @@ class ZeroOffset:
         self.passvalue = passvalue/gain 
         self.defs = "DATA/{}.npy".format(uut.uut)
         self.identity_pattern = bool(int(os.getenv("IDENTITY_PATTERN", 0)))
+	self.verbose = int(os.getenv("VERBOSE", 0))
+        self.ao0 = ao0
+        self.user_quit = False
 
         try:
-            self.read_defaults()
+            print("self.identity_pattern {}".format(self.identity_pattern))
             if not self.identity_pattern:
+                self.read_defaults()
                 for ch in range(0, self.nchan):            
-                    self.aw[:,ch] = self.current[ch]        
+                    self.aw[:,self.ao0+ch] = self.current[ch]
+                    
         except IOError:
             print("no defaults")
+
+    def vprint(self, str):
+        if self.verbose > 0:
+            print(str)
 
     def feedback(self, fb_data):
         actual = np.mean(fb_data[50:,:], 0)
@@ -153,12 +162,12 @@ class ZeroOffset:
         else:
             print("maximum error {}".format(errmax))
             
-        self.current = np.mean(self.aw, 0)[0:self.nchan]
+        self.current = np.mean(self.aw, 0)[self.ao0:self.ao0+self.nchan]
         newset = self.current - actual * self.KFB
         print("newset {}".format(newset))        
         if not self.identity_pattern:
             for ch in range(0, self.nchan):            
-                self.aw[:,ch] = newset[ch]
+                self.aw[:,self.ao0+ch] = newset[ch]
             
         self.aw.astype('int16').tofile("awg.dat")
         
@@ -166,13 +175,20 @@ class ZeroOffset:
 
         
     def load(self):
-        while not self.finished:
+	self.vprint("load 01")
+        while not self.finished or not self.user_quit:
+	    self.vprint("load 10")
             self.uut.load_awg(self.aw.astype(np.int16))           
             print("loaded array ", self.aw.shape)
             if self.in_bounds:
                 # plot this one, drop out next time
+		print("Target acheived, quit any time")
                 self.finished = True
+            self.vprint("load 66")
             yield self
+
+        self.vprint("load 99")
+
 
 
     def read_defaults(self):        
