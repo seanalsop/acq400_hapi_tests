@@ -132,16 +132,16 @@ class ZeroOffset:
         self.in_bounds = False
         self.KFB = gain
         self.passvalue = passvalue/gain 
-        self.defs = "DATA/{}.npy".format(uut.uut)
         self.identity_pattern = bool(int(os.getenv("IDENTITY_PATTERN", 0)))
 	self.verbose = int(os.getenv("VERBOSE", 0))
         self.ao0 = ao0
         self.user_quit = False
+	self.defs = AwgDefaults(uut.uut)
 
         try:
             print("self.identity_pattern {}".format(self.identity_pattern))
             if not self.identity_pattern:
-                self.read_defaults()
+                self.current = self.defs.read_defaults()
                 for ch in range(0, self.nchan):            
                     self.aw[:,self.ao0+ch] = self.current[ch]
                     
@@ -157,7 +157,7 @@ class ZeroOffset:
         errmax = max(abs(actual))
         if  errmax < self.passvalue:
             print("maximum error {} is within bounds {}, save it".format(errmax, self.passvalue))
-            self.store_defaults()
+            self.defs.store_defaults(self.current)
             self.in_bounds = True
         else:
             print("maximum error {}".format(errmax))
@@ -191,15 +191,19 @@ class ZeroOffset:
 
 
 
+class AwgDefaults:
+    def __init__(self, uut_name):
+        self.defs = "DATA/{}.npy".format(uut_name)
+
     def read_defaults(self):        
         print("read_defaults {}".format(self.defs))
         with open(self.defs, 'r') as fp:
-            self.current = np.load(fp)
-            print(self.current)
+            current = np.load(fp)
+        print("read_defaults {} {}".format(self.defs, current))
+        return current
         
-    def store_defaults(self):
-        print("store_defaults {}".format(self.defs))
-        print(self.current)
+    def store_defaults(self, current):
+        print("store_defaults {} {}".format(self.defs, current))
         with open(self.defs, 'w') as fp:
-            np.save(fp, self.current)
+            np.save(fp, current)
         
