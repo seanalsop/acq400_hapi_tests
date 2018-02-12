@@ -95,7 +95,8 @@ class RainbowGen:
 	self.gain = 1.0
 	try:   
 	    self.current = self.defs.read_defaults()
-	    for ch in range(0, self.nchan):            
+	    print("self.current len {} self.nchan {}".format(len(self.current), self.nchan))
+	    for ch in range(0, len(self.current)):            
 		self.aw[:,self.ao0+ch] = self.current[ch]    
 	except IOError:
 	    self.current = np.zeros(self.nchan)
@@ -111,8 +112,8 @@ class RainbowGen:
                 aw1[:,ch] = np.add(np.multiply(self.sinc(ch),5),2)
                 print("loading array ", aw1.shape)
 		awr = (aw1*(2**15-1)/10)/self.gain
-		for chx in range(self.nchan):
-		    awr[:,chx] += self.current[chx]
+		for chx in range(len(self.current)):
+		    awr[:,self.ao0+chx] += self.current[chx]
                 self.uut.load_awg(awr.astype(np.int16))           
                 print("loaded array ", aw1.shape)
                 yield ch
