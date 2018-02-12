@@ -170,6 +170,14 @@ class ZeroOffset:
         self.ao0 = ao0
         self.user_quit = False
 	self.defs = AwgDefaults(uut.uut)
+        # offsets compensate channel geometry when AWG disabled
+        self.apply_geometry = bool(int(os.getenv("AO_CORRECT_GEOMETRY", 0)))
+        self.geometry = [ 
+                -2*3.3, 0, 0, -2*3.3, 0, 0, 0, 6*3.3, 
+                0, 0, 0, 0, 0, -3*3.3, 0, 0,
+                -2*3.3, 0, 0, -2*3.3, 0, 0, 0, 6*3.3, 
+                0, 0, 0, 0, 0, -3*3.3, 0, 0
+        ]
 
         try:
             print("self.identity_pattern {}".format(self.identity_pattern))
@@ -209,16 +217,22 @@ class ZeroOffset:
         
     def load(self):
 	self.vprint("load 01")
+        yy = self
         while not self.finished or not self.user_quit:
 	    self.vprint("load 10")
+            if self.finished and self.apply_geometry:
+                print("apply_geometry")
+                for ch in range(0, self.nchan):
+                    self.aw[:,ch] += self.geometry[ch]
+                yy = None
             self.uut.load_awg(self.aw.astype(np.int16))           
             print("loaded array ", self.aw.shape)
             if self.in_bounds:
                 # plot this one, drop out next time
-		print("Target acheived, quit any time")
+		print("Target achieved, quit any time")
                 self.finished = True
             self.vprint("load 66")
-            yield self
+            yield yy
 
         self.vprint("load 99")
 
