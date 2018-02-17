@@ -74,12 +74,12 @@ class RainbowGen:
             self.aw[:,ch] = self.rainbow(ch)            
 #            self.aw[:,ch] = self.rainbow(1)
 
-    def load(self):
+    def load(self, autorearm = False):
         for ii in range(99999 if self.run_forever else 1):
             for ch in range(self.nchan):        
                 aw1 = np.copy(self.aw)
                 aw1[:,ch] = np.add(np.multiply(self.sinc(ch),5),2)
                 print("loading array ", aw1.shape)
-                self.uut.load_awg((aw1*(2**15-1)/10).astype(np.int16))           
+                self.uut.load_awg((aw1*(2**15-1)/10).astype(np.int16), autorearm = autorearm)
                 print("loaded array ", aw1.shape)
                 yield ch

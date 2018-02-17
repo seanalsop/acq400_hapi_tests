@@ -47,11 +47,12 @@ def run_shots(args):
         work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
         
     store = store_file
-    loader = work.load()
+    loader = work.load(autorearm = args.autorearm)
     for ii in range(0, args.loop):
         print("shot: %d" % (ii))
-        f = loader.next()
-        print("Loaded %s" % (f))
+        if ii == 0 or args.autorearm:
+            f = loader.next()
+            print("Loaded %s" % (f))
         uut.run_oneshot()
 
         if args.store:
@@ -69,6 +70,7 @@ def run_shots(args):
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
+    parser.add_argument('--autorearm', type=bool, default=False, help="load the waveform once, repeat many")
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--loop', type=int, default=1, help="loop count")        
     parser.add_argument('--store', type=int, default=1, help="save data when true") 
