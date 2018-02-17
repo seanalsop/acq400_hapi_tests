@@ -73,7 +73,7 @@ def run_shots(args):
     loader = work.load(autorearm = args.autorearm)
     for ii in range(0, args.loop):
         print("shot: %d" % (ii))
-        if ii == 0 or args.autorearm:
+        if ii == 0 or not args.autorearm:
             f = loader.next()
             print("Loaded %s" % (f))
         uut.run_oneshot()
