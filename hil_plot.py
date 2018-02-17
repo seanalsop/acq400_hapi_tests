@@ -37,8 +37,8 @@ def run_shots(args):
     if args.plot:
         plt.ion()
 
-    uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=%d' % \
-        (args.post, 1 if args.trg == 'int' else 0, 1 if args.store==0 else 0) 
+    uut.s0.transient = 'POST=%d SOFT_TRIGGER=%d DEMUX=0' % \
+        (args.post, 1 if args.trg == 'int' else 0) 
 
     if args.aochan == 0:
         args.aochan = args.nchan
@@ -70,22 +70,33 @@ def run_shots(args):
             work.gain = gain
 
     store = store_file
+    print("args.autorearm {}".format(args.autorearm))
+
     loader = work.load(autorearm = args.autorearm)
     for ii in range(0, args.loop):
         print("shot: %d" % (ii))
         if ii == 0 or not args.autorearm:
             f = loader.next()
             print("Loaded %s" % (f))
+        else:
+            if args.autorearm and ii+1 == args.loop:
+            # on the final run, drop out of autorearm mode. 
+            # the final shot MUST be in ONCE mode so that the DMAC
+            # is freed on conclusion
+                for sx in uut.modules:
+                    if uut.modules[sx].MODEL.startswith('AO'):
+                        uut.modules[sx].playloop_oneshot = '1'
+                        
         uut.run_oneshot()
 
+        print("read_chan %d" % (args.post*args.nchan))
+        rdata = uut.read_chan(0, args.post*args.nchan)
         if args.store:
-            print("read_chan %d" % (args.post*args.nchan))
-            rdata = uut.read_chan(0, args.post*args.nchan)            
             store(ii, rdata, args.nchan, args.post)
-            if args.plot > 0 :
-                plt.cla()
-                plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
-                plot(ii, np.right_shift(rdata, rshift), args.nchan, args.post)                
+        if args.plot > 0 :
+            plt.cla()
+            plt.title("AI for shot %d %s" % (ii, "persistent plot" if args.plot > 1 else ""))
+            plot(ii, np.right_shift(rdata, rshift), args.nchan, args.post)                
         if args.wait_user is not None:
             args.wait_user()
 
@@ -122,7 +133,11 @@ def select_prompt_or_exec(value):
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq1001 HIL demo')
-    parser.add_argument('--autorearm', type=bool, default=False, help="load the waveform once, repeat many")
+    # --type=bool does not work, try this: 
+    # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
+    parser.add_argument('--autorearm', default=False, type=lambda x: (str(x).lower() in ['true', 't', 'yes', '1']), 
+                        help="load the waveform once, repeat many")
+    parser.add_argument('--is_debug', default=False, type=lambda x: (str(x).lower() in ['true', 't', 'yes', '1'])),
     parser.add_argument('--files', default="", help="list of files to load")
     parser.add_argument('--pulse', help="interval,duration,scan: + : each channel in turn")
     parser.add_argument('--loop', type=int, default=1, help="loop count")
