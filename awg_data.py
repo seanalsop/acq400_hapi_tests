@@ -25,12 +25,12 @@ class RunsFiles:
         self.uut = uut
         self.files = files
         self.run_forever = run_forever
-        
-    def load(self):
+
+    def load(self, autorearm = False):
         for ii in range(99999 if self.run_forever else 1):
             for f in self.files:
                 with open(f, mode='rb') as fp:
-                    self.uut.load_awg(fp.read())
+                    self.uut.load_awg(fp.read(), autorearm = autorearm)
                 yield f 
             
 
@@ -53,10 +53,10 @@ class AllFullScale(SinGen):
         for ch in range(nchan):
             self.aw[:,ch] = self.sw
 
-    def load(self):
+    def load(self, autorearm = False):
         for ii in range(99999 if self.run_forever else 1):
             for ch in range(self.nchan):
-                self.uut.load_awg((self.aw*(2**15-1)).astype(np.int16))
+                self.uut.load_awg((self.aw*(2**15-1)).astype(np.int16), autorearm = autorearm)
                 print("loaded array ", self.aw.shape)
                 yield ch
     
@@ -140,9 +140,8 @@ class Pulse:
 	print( "self.interval {}".format(self.interval)) 
         self.aw = np.zeros((nsam,nchan))
         self.generate()
-
-    def load(self):
-        self.uut.load_awg((self.aw*(2**15-1)/10).astype(np.int16))
+    def load(self, autorearm = False):
+        self.uut.load_awg((self.aw*(2**15-1)/10).astype(np.int16), autorearm = autorearm)
 	yield self
     
 
@@ -214,9 +213,7 @@ class ZeroOffset:
         self.aw.astype('int16').tofile("awg.dat")
         
             
-
-        
-    def load(self):
+    def load(self, autorearm = False):
 	self.vprint("load 01")
         yy = self
         while not self.finished or not self.user_quit:
@@ -226,7 +223,7 @@ class ZeroOffset:
                 for ch in range(0, self.nchan):
                     self.aw[:,ch] += self.geometry[ch]
                 yy = None
-            self.uut.load_awg(self.aw.astype(np.int16))           
+            self.uut.load_awg(self.aw.astype(np.int16), autorearm = autorearm)           
             print("loaded array ", self.aw.shape)
             if self.in_bounds:
                 # plot this one, drop out next time
