@@ -37,29 +37,32 @@ def run_main(parser):
     role = "master"
     
     for uut in uuts:
-        uut.s0.trace = '1' if parser.trace else '0'
-        uut.s1.trace = '1' if parser.trace else '0'        
+        uut.s0.trace = parser.trace
+        uut.s1.trace = parser.trace
             
+
         if role == "master":                        
             # ensure there are two values to unpack, provide a default for the 2nd value..
             mtrg, edge = (parser.master_trg.split(',') + [ "rising" ])[:2]             
             parser.trg_edge = edge                     
-            uut.set_sync_routing_master( trg_dx = "d1" if mtrg=="soft" else "d0")
+            uut.set_sync_routing_master( trg_dx="d1" if mtrg=="soft" else "d0", clk_dx="d2")
             
             uut.set_master_trg(mtrg, edge, enabled = True if mtrg=="soft" else False)
             set_mb_clk(uut, parser.master_clk.split(','))            
             role = "slave"
             trg = "1,%d,%d" % (1 if mtrg=="soft" else 0, rf(edge))
+	    clkdiv = parser.clkdiv
         else:
             trg = "1,%d,%d" % (0, rf(parser.trg_edge))
+            clkdiv = 1
             uut.set_sync_routing_slave()
             
         uut.s0.SIG_TRG_EXT_RESET = '1'  # self-clears   
         
         uut.s1.trg = trg
         uut.s1.clk = '1,1,1'
-        uut.s1.clkdiv = parser.clkdiv
-        uut.s1.CLKDIV = parser.clkdiv
+        uut.s1.clkdiv = clkdiv
+        uut.s1.CLKDIV = clkdiv
      
     if parser.test:
         run_link_test(parser, uuts[0], uuts[1])
