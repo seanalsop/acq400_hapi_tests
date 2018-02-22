@@ -60,14 +60,18 @@ def run_shots(args):
         work = awg_data.RunsFiles(uut, args.files.split(','), run_forever=True)
     else:
         work = awg_data.RainbowGen(uut, args.aochan, args.awglen, run_forever=True)
+        # compensate gain ONLY Rainbow Case
         if args.range != "default":
-            for sx in uut.modules:
-                print("setting GAIN_ALL {}".format(args.range))
-                uut.modules[sx].GAIN_ALL = args.range
-                break
             gain = 10/float(args.range.strip('V'))
             print("setting work.gain {}".format(gain))
             work.gain = gain
+
+    # Set range knobs, valid ALL data sources.
+    if args.range != "default":
+        for sx in uut.modules:
+            print("setting GAIN_ALL {}".format(args.range))
+            uut.modules[sx].GAIN_ALL = args.range
+            break
 
     store = store_file
     print("args.autorearm {}".format(args.autorearm))
