@@ -32,7 +32,7 @@ def run_shot(args):
     shot_controller = acq400_hapi.ShotController(uuts)
 
     try:
-        shot_controller.run_shot(soft_trigger=True)
+        shot_controller.run_shot(soft_trigger=args.soft_trigger)
         acq400_hapi.cleanup.sleep(1.0)            
             
     except acq400_hapi.cleanup.ExitCommand:
@@ -44,6 +44,7 @@ def run_shot(args):
 
 def run_main():
     parser = argparse.ArgumentParser(description='run capture, with optional transient configuration')
+    parser.add_argument('--soft_trigger', type=int, default=True)
     parser.add_argument('--transient', default='notouch', help='transient control string use commas rather than spaces')
     parser.add_argument('uuts', nargs='+', help='uut1 [uut2..]')
     run_shot(parser.parse_args())
