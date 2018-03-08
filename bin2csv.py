@@ -26,15 +26,16 @@ def csv_name(args, binfile):
 
     return "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename)
 
-def bin2csv_onesource_manychan(args):     
-    raw = np.fromfile(args.binfiles[0], args.wtype)
-    nrows = len(raw)/args.nchan
-    chx = np.reshape(raw, (nrows, args.nchan))
+def bin2csv_onesource_manychan(args):
+    for src in args.binfiles:
+        raw = np.fromfile(src, args.wtype)
+        nrows = len(raw)/args.nchan
+        chx = np.reshape(raw, (nrows, args.nchan))
         
-    with open(args.csvf, 'w' ) as fout:
-        writer = csv.writer(fout)
-        for row in range(0, nrows):
-            writer.writerow(chx[row,:])
+        with open(csv_name(args, src), 'w' ) as fout:
+           writer = csv.writer(fout)
+           for row in range(0, nrows):
+               writer.writerow(chx[row,:])
                 
                 
 def bin2csv_many_onechan_sources(args):
@@ -44,19 +45,18 @@ def bin2csv_many_onechan_sources(args):
     lens = [ len(u) for u in chx ]
     nrows = lens[0]
     chxx = np.vstack(chx)
-    
-    with open(args.csvf, 'w' ) as fout:
+    csvf = csv_name(args, args.binfiles[0]) 
+    with open(csvf, 'w' ) as fout:
         writer = csv.writer(fout)
         for row in range(0, nrows):
             writer.writerow(chxx[:,row])    
             
 def bin2csv(args):
     args.wtype = get_word_type(args.word)
-    args.csvf = csv_name( args, args.binfiles[0])
-    if len(args.binfiles) == 1:
-        bin2csv_onesource_manychan(args)
-    else:
+    if args.paste:
         bin2csv_many_onechan_sources(args)
+    else:
+        bin2csv_onesource_manychan(args)
         
 def run_main():
     parser = argparse.ArgumentParser(description='bin2csv')
@@ -64,7 +64,8 @@ def run_main():
     parser.add_argument('--word', default='int16', help="int16|int32")
     parser.add_argument('--outroot', default='', help="output root directory")
     parser.add_argument('--out', default='', help="explicit output name")
-    parser.add_argument('binfiles', nargs='+', help="file to convert either a single file * nchan or paste multiple files * 1 chan")
+    parser.add_argument('--paste', default=0, type=int, "1: paste multiple files * 1 chan")
+    parser.add_argument('binfiles', nargs='+', help="file[s] to convert")
     bin2csv(parser.parse_args())
      
     
