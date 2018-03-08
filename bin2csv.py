@@ -18,7 +18,13 @@ def get_word_type(wtype):
         print("ERROR, undefined word type {}".format(wtype))
         exit(1)
 
+def csv_name(args, binfile):
+    if len(args.out) > 0:
+        basename = args.out
+    else:
+        basename, extn = os.path.splitext(binfile)
 
+    return "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename)
 
 def bin2csv_onesource_manychan(args):     
     raw = np.fromfile(args.binfiles[0], args.wtype)
@@ -46,12 +52,7 @@ def bin2csv_many_onechan_sources(args):
             
 def bin2csv(args):
     args.wtype = get_word_type(args.word)
-    if len(args.out) > 0:
-        basename = args.out
-    else:
-        basename, extn = os.path.splitext(args.binfiles[0])        
-    args.csvf = "{}{}{}.csv".format(args.outroot, os.sep if len(args.outroot)>0 else '', basename) 
-    
+    args.csvf = csv_name( args, args.binfiles[0])
     if len(args.binfiles) == 1:
         bin2csv_onesource_manychan(args)
     else:
