@@ -27,7 +27,7 @@ import ast
 SOFT_TRIGGER=int(os.getenv("SOFT_TRIGGER", "1"))
 TRACE_UPLOAD=int(os.getenv("TRACE_UPLOAD", "0"))
 SAVEDATA=os.getenv("SAVEDATA", None)
-PLOTDATA=int(os.getenv("PLOTDATA", "1"))
+PLOTDATA=int(os.getenv("PLOTDATA", "-1"))
 CAPTURE=int(os.getenv("CAPTURE", "1"))
 CHANNELS=os.getenv("CHANNELS", None)
 # CHANNELS: blank or () : ALL
@@ -76,10 +76,11 @@ def run_main():
 # ...
 # 18 28     15 16
         if PLOTDATA:
+            nplot = nchan if PLOTDATA < 0 else PLOTDATA
             for col in range(ncol):
-                for chn in range(0,nchan):
+                for chn in range(0, nplot):
                     fignum = 1 + col + chn*ncol
-                    plt.subplot(nchan, ncol, fignum)                
+                    plt.subplot(nplot, ncol, fignum)                
                     plt.plot(chx[col][chn])
 
                 
