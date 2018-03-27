@@ -44,7 +44,14 @@ def run_shots(args):
         args.aochan = args.nchan
 
     for sx in uut.modules:
-        uut.modules[sx].trg = '1,1,1'  if args.trg == 'int' else '1,0,1'
+        if args.trg == 'int':
+            uut.modules[sx].trg = '1,1,1'
+        else:
+            if args.trg.contains('falling'):
+                uut.modules[sx].trg = '1,0,0'
+            else:
+                uut.modules[sx].trg = '1,0,1'
+                
     for sx in uut.modules:
         if uut.modules[sx].data32 == '1':
             if uut.modules[sx].adc_18b == '1':
