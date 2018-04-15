@@ -19,18 +19,18 @@ def write_console(message):
     sys.stdout.write(message)
     sys.stdout.flush()
 
-    
+
 class UploadFilter:
     def __init__(self):
         self.okregex = re.compile(r"axi0 start OK ([0-9]{4}) OK")
         self.line = 0
 
     def __call__ (self, st):
-	st = st.rstrip()
+        st = st.rstrip()
         LOG.write("{}\n".format(st))
 
         if self.okregex.search(st) != None:
-	    if self.line%10 != 0:
+            if self.line%10 != 0:
                 write_console('.')
             else:
                 write_console("{}".format(self.line/10))
@@ -50,7 +50,7 @@ def set_simulate(uut, enable):
         uut.modules[s].simulate = '1' if enable else '0'
 
 def run_shot(uut, args):
-	# always capture over. The offload is zero based anyway, so add another one
+        # always capture over. The offload is zero based anyway, so add another one
     if args.captureblocks:
         uut.s14.mgt_run_shot = str(int(args.captureblocks) + 2)
         uut.run_mgt()
@@ -62,10 +62,10 @@ def run_shot(uut, args):
     ttime = datetime.datetime.now()-t1
     mb = args.captureblocks*4
     print("upload {} MB done in {} seconds, {} MB/s\n".\
-		format(mb, ttime, mb/ttime.seconds))
+          format(mb, ttime, mb/ttime.seconds))
     if args.validate != 'no':
-	cmd = "{} {}".format(args.validate, uut.uut)
-	print "run \"{}\"".format(cmd)
+        cmd = "{} {}".format(args.validate, uut.uut)
+        print "run \"{}\"".format(cmd)
         rc = call(cmd, shell=True, stdin=0, stdout=1, stderr=2)
         if rc != 0:
             print("ERROR called process {} returned {}".format(args.validate, rc))
@@ -84,14 +84,15 @@ def run_shots(args):
             print("shot: {} {}".format(ii, t1.strftime("%Y%m%d %H:%M:%S")))
             run_shot(uut, args)
             t2 = datetime.datetime.now()
-	    print("done in {} seconds\n\n".format((t2-t1).seconds))
+            print("done in {} seconds\n\n".format((t2-t1).seconds))
 
             if args.wait_user:
                 raw_input("hit return to continue")
     except KeyboardInterrupt:
         print("Keyboard Interrupt, take it all down NOW")
-        os._exit()
+        os._exit(1)
 
+    os.exit(0)
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq2106 mgtdram test')
