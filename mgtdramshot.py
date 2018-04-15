@@ -13,6 +13,12 @@ import re
 
 LOG = None
 
+def write_console(message):
+# explicit flush needed to avoice lockup on Windows.    
+    sys.stdout.write(message)
+    sys.stdout.flush()
+
+    
 class UploadFilter:
     def __init__(self):
         self.okregex = re.compile(r"axi0 start OK ([0-9]{4}) OK")
@@ -20,32 +26,22 @@ class UploadFilter:
 
     def __call__ (self, st):
 	st = st.rstrip()
-        sys.stdout.flush()
         LOG.write("{}\n".format(st))
-        sys.stdout.flush()
 
         if self.okregex.search(st) != None:
 	    if self.line%10 != 0:
-                sys.stdout.flush()
-                sys.stdout.write('.')
+                write_console('.')
             else:
-                sys.stdout.flush()
-                sys.stdout.write("{}".format(self.line/10))
-            sys.stdout.flush()
+                write_console("{}".format(self.line/10))
             self.line += 1
-            sys.stdout.flush()
             if self.line > 100:
-                sys.stdout.flush()
-                sys.stdout.write('\n')
+                write_console('\n')
                 self.line = 0
         else:
             if self.line != 0:
-                sys.stdout.flush()
-                sys.stdout.write('\n')
-            sys.stdout.flush()
-            print(">{}".format(st))
+                write_console('\n')
+            write_console(">{}\n".format(st))
             self.line = 0
-            sys.stdout.flush()
 
 
 def set_simulate(uut, enable):
@@ -54,11 +50,12 @@ def set_simulate(uut, enable):
 
 def run_shot(uut, args):
 	# always capture over. The offload is zero based anyway, so add another one
-    uut.s14.mgt_run_shot = str(int(args.captureblocks) + 2)
-    uut.run_mgt()
+    if args.captureblocks:
+        uut.s14.mgt_run_shot = str(int(args.captureblocks) + 2)
+        uut.run_mgt()
+
     uut.s14.mgt_offload = args.offloadblocks if args.offloadblocks != 'capture' \
         else '0-{}'.format(args.captureblocks)
-
     t1 = datetime.datetime.now()
     uut.run_mgt(UploadFilter())
     ttime = datetime.datetime.now()-t1
