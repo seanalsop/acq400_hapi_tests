@@ -10,6 +10,7 @@ import argparse
 from subprocess import call
 import re
 
+import os
 
 LOG = None
 
@@ -77,15 +78,19 @@ def run_shots(args):
     uut.s14.mgt_taskset = '1'
     set_simulate(uut, args.simulate)
 
-    for ii in range(0, args.loop):
-	t1 = datetime.datetime.now()
-        print("shot: {} {}".format(ii, t1.strftime("%Y%m%d %H:%M:%S")))
-        run_shot(uut, args)
-	t2 = datetime.datetime.now()
-	print("done in {} seconds\n\n".format((t2-t1).seconds))
+    try:
+        for ii in range(0, args.loop):
+            t1 = datetime.datetime.now()
+            print("shot: {} {}".format(ii, t1.strftime("%Y%m%d %H:%M:%S")))
+            run_shot(uut, args)
+            t2 = datetime.datetime.now()
+	    print("done in {} seconds\n\n".format((t2-t1).seconds))
 
-        if args.wait_user:
-            raw_input("hit return to continue")
+            if args.wait_user:
+                raw_input("hit return to continue")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt, take it all down NOW")
+        os._exit()
 
 
 def run_main():
