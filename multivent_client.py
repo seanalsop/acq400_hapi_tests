@@ -44,9 +44,9 @@ class Uut:
             yy.astype('int16').tofile(fn+"/CH{:02d}".format(ch))            
             
         self.store_format(fn)
-        print("{} {}".format(kws['pvname'], kws['value']))
+        print(("{} {}".format(kws['pvname'], kws['value'])))
         
-        print(self.channels[1])
+        print((self.channels[1]))
         
     def monitor(self):
         self.channels = [epics.PV(self.name+WFNAME.format(ch)) for ch in range(1, NCHAN+1)]

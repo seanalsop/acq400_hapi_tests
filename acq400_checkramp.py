@@ -84,7 +84,7 @@ def run_main():
                 plt.plot(checkramp)
                 checks.append((np.amax(checkramp), np.amin(checkramp)))
             plt.draw()
-            print("stats {}".format(checks))
+            print(("stats {}".format(checks)))
             if PLOTTO > 0:
                 while PLOTTO > 0:
                     time.sleep(1)

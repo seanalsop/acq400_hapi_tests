@@ -31,7 +31,7 @@ from subprocess import call
 class ActionScript:
     def __init__(self, script_and_args):
         self.sas = script_and_args.split()
-        print("ActionScript creates {}".format(self.sas))
+        print(("ActionScript creates {}".format(self.sas)))
     def __call__(self):
         print("ActionScript: call()")
         call(self.sas)
@@ -56,7 +56,7 @@ def upload(args):
             state = '99'
             while state != '0':
                 state = uuts[0].s0.state.split()[0]
-                print("state:{}".format(state))
+                print(("state:{}".format(state)))
                 if state == '1':
                     if trigger_action:
                         trigger_action()

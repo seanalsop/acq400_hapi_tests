@@ -68,7 +68,7 @@ def run_main(parser):
         run_link_test(parser, uuts[0], uuts[1])
 
     if not parser.master_trg.startswith("soft"):
-        raw_input("say when")
+        input("say when")
         uuts[0].set_master_trg(mtrg, edge, enabled=True)       
 
 

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 def store_file(it, rdata, nchan, nsam):
     fn = 'DATA/ai%04d.dat' % (it)
-    print("store_file {}".format(fn))
+    print(("store_file {}".format(fn)))
 
     with open(fn, 'wb') as f:
         f.write(rdata)
@@ -54,9 +54,9 @@ def run_shots(args):
     try:
         loader = work.load()
         ii = 0
-        while loader.next():        
+        while next(loader):        
             uut.run_oneshot()        
-            print("read_chan %d" % (args.post*args.nchan))
+            print(("read_chan %d" % (args.post*args.nchan)))
             rdata = uut.read_chan(0, args.post*args.nchan)                        
             if args.plot > 0 :
                 plt.cla()
@@ -66,10 +66,10 @@ def run_shots(args):
                 plot(ii, np.right_shift(rdata, rshift), args.nchan, args.post)
                 store(ii, rdata, args.nchan, args.post)
                 if args.wait_user:
-                    key = raw_input("hit return to continue, q for quit").strip()
+                    key = input("hit return to continue, q for quit").strip()
                     if key == 'q':
                         work.user_quit = True
-                    print("raw_input {}".format(key))
+                    print(("raw_input {}".format(key)))
                     if uut.s0.data32 == '1':
                         print("scale rdata >> 16")
                         rdata = rdata >> 16

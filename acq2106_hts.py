@@ -26,12 +26,12 @@ def config_shot(uut, args):
     uut.s0.run0 = uut.s0.sites
 
     for s in args.sim.split(','):
-        print "hello s {}".format(s)
+        print("hello s {}".format(s))
 
     if str(3) in args.sim.split(','):
-        print "in"
+        print("in")
     else:
-        print "NOT IN"
+        print("NOT IN")
 
     sim_sites = {}
     if args.sim != "nosim":
@@ -40,7 +40,7 @@ def config_shot(uut, args):
     for site in uut.modules:
         sim = '1' if site in sim_sites else '0'
         uut.svc['s%s' % (site)].simulate = sim
-        print "site {} sim {}".format(site, sim)
+        print("site {} sim {}".format(site, sim))
 
 
 def init_comms(uut, args):
@@ -52,7 +52,7 @@ def init_comms(uut, args):
         uut.cB.aggregator = "sites=%s" % (uut.s0.sites if args.commsB == 'all' else args.commsB)
 
 def init_work(uut, args):
-    print "init_work"
+    print("init_work")
 
 def start_shot(uut, args):    
     uut.s0.streamtonowhered = "start"

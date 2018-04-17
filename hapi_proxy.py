@@ -20,11 +20,11 @@ def sys1(cmd):
             exec('u.{}'.format(cmd))
     else:
         for u in uuts:
-            print("%s" % (eval('u.{}'.format(cmd))))
+            print(("%s" % (eval('u.{}'.format(cmd)))))
             
 def sys(loop = 1):
     while loop:
-        sys1(raw_input(">"))
+        sys1(input(">"))
         loop -= 1
         
 if args.sys > 0:

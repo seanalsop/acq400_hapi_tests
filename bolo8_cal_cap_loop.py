@@ -57,7 +57,7 @@ def set_next_shot(args, flavour, info):
     while not flavour(sn):
         sn += 1
     for tree in args.uuts:
-        print("Setting {} for {} to shot {}".format(tree, info, sn))
+        print(("Setting {} for {} to shot {}".format(tree, info, sn)))
         Tree.setCurrent(tree, sn)
         Tree(tree, -1).createPulse(sn)
     return sn
@@ -105,7 +105,7 @@ def run_capture(args):
 def run_shots(args):
 
     for shot in range(1, args.shots+1):
-        print("Cycle {}".format(shot))
+        print(("Cycle {}".format(shot)))
         if args.cal:
             run_cal(args)
         if args.cap:

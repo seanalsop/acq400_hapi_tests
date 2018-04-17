@@ -37,7 +37,7 @@ def set_mbclk(uut, f2):
         actual = float(uut.s0.SIG_CLK_MB_FREQ.split(' ')[1])
         if math.fabs(actual - fout) < 10000:
             settled = True
-        print("mb_clk set:{} actual:{} {}".format(fout, actual, 'OK' if settled else ''))
+        print(("mb_clk set:{} actual:{} {}".format(fout, actual, 'OK' if settled else '')))
         if not settled:
             time.sleep(1)
         

@@ -30,7 +30,7 @@ def make_waterfall(uut, interval, hitime, states):
     
 def soft_trigger_loop(uut):
     while True:
-        key = raw_input("trigger>")
+        key = input("trigger>")
         if key == '':
             uut.s0.soft_trigger = 1
         else:

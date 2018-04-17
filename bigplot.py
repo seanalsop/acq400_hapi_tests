@@ -22,7 +22,7 @@ uut = "acq2106_000"
 
 def load3(lun=0, uut=uut, cycle=1, buf0=0, nchan=48):
     if buf0 % 3 != 0:
-        print("ERROR, buf %d not modulo 3" % (buf0))
+        print(("ERROR, buf %d not modulo 3" % (buf0)))
         exit(1)
     b3 = tuple([ np.fromfile(FMT % (lun, uut, cycle, lun, buf0+x), np.int16) for x in range(3)] )
     raw = np.concatenate(b3)

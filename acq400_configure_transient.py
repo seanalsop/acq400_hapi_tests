@@ -15,7 +15,7 @@ def configure_shot(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts]  
     for uut in uuts:
         if hasattr(uut.s0, 'TIM_CTRL_LOCK'):
-            print "LOCKDOWN {}".format(uut)
+            print("LOCKDOWN {}".format(uut))
             uut.s0.TIM_CTRL_LOCK = 0
             
     mset = sets.Set(uuts[0:2])
@@ -33,7 +33,7 @@ def configure_shot(args):
 
     
     for u in uuts:
-        print("uut:%s" % u.uut)
+        print(("uut:%s" % u.uut))
         for svn, svc in sorted(u.svc.items()):
             svc.trace = 1
         

@@ -15,7 +15,7 @@ def get_word_type(wtype):
     elif wtype == 'int32':
         return np.int32
     else:
-        print("ERROR, undefined word type {}".format(wtype))
+        print(("ERROR, undefined word type {}".format(wtype)))
         exit(1)
 
 def csv_name(args, binfile):
