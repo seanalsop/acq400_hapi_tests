@@ -11,15 +11,6 @@ import matplotlib.pyplot as plt
 import os
 import time
 import argparse
-import struct
-
-# convert data to ints was a function used in testing.
-def convert_data_to_ints(data, big_endian=False):
-    int_count = len(data) // 4  # Assuming uint is 4 bytes long !!!
-    print("Len =", (len(data)))
-    fmt = ">" if big_endian else "<"
-    fmt += "i" * int_count
-    return list(struct.unpack(fmt, data[:int_count * 4]))
 
 
 # make_data_dir creates a subdirectory
@@ -42,7 +33,6 @@ def run_stream(args):
             if uut.s0.data32:
                 wordsizetype = "<i4"  # 32 bit little endian
                 wordsize = 32
-
         except AttributeError:
             print("Attribute error detected. No data32 attribute - defaulting to 16 bit")
             wordsizetype = "<i2"  # 16 bit little endian
@@ -53,32 +43,27 @@ def run_stream(args):
         make_data_dir(args.root)
 
         while time.clock() < (start_time + args.runtime):
+
             data = skt.sock.recv(args.filesamples*wordsize*(int(channum)))
-
-            # data = skt.sock.recv(4096)
-
-            #data = convert_data_to_ints(data, big_endian=False)
-            #print("Little endian: {}".format(data))
-
             data_file = open("{}/data{}.dat".format(args.root, num), "wb")
             data = np.frombuffer(data, dtype=wordsizetype, count=-1)
-            plt.plot(data[::32])
-            plt.show()
+
+            if args.plot == 1:
+                plt.plot(data[::32])
+                plt.show()
+
             data.tofile(data_file, '')
-            #data_file.write(data)
             num += 1
             data_file.close()
-            # data = np.fromfile("ROOT/data0.dat", dtype="<i4")
-            # plt.plot(data[::32])
-            # plt.show()
-
 
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq400 stream')
     parser.add_argument('--filesamples', default=10, type=int, help="Number of samples to store in file")
     parser.add_argument('--root', default="ROOT", type=str, help="Location to save files")
-    parser.add_argument('--runtime', default=1, type=int, help="How long to stream data for")
+    parser.add_argument('--runtime', default=5, type=int, help="How long to stream data for")
+    parser.add_argument('--plot', default=0, type=int, help='Whether the data streamed from the loop is plotted - pauses stream')
+    parser.add_argument('--verbose', default=1, type=int, help='Prints status messages as the stream is running')
     parser.add_argument('uuts', nargs='+', help="uuts")
 
     run_stream(parser.parse_args())
