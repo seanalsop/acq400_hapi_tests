@@ -48,16 +48,14 @@ def run_stream(args):
     uuts = [acq400_hapi.Acq400(u) for u in args.uuts]
 
     for uut in uuts:
-        channum = uut.s0.NCHAN
-        # print(int(channum))
+
         try:
             if uut.s0.data32:
                 wordsizetype = "<i4"  # 32 bit little endian
-                wordsize = 32
+
         except AttributeError:
             print("Attribute error detected. No data32 attribute - defaulting to 16 bit")
             wordsizetype = "<i2"  # 16 bit little endian
-            wordsize = 16
 
         skt = acq400_hapi.Netclient(args.uuts[0], 4210)  # Needs to be string
         make_data_dir(args.root, args.verbose)
@@ -71,7 +69,7 @@ def run_stream(args):
             data += skt.sock.recv(1024)
 
             if len(data) / 1024 >= args.filesize:
-
+                data_length += float(len(data)) / 1024
                 data_file = open("{}/data{}.dat".format(args.root, num), "wb")
                 data = np.frombuffer(data, dtype=wordsizetype, count=-1)
 
@@ -80,7 +78,7 @@ def run_stream(args):
                     plt.show()
 
                 data.tofile(data_file, '')
-                data_length += float(len(data)) / 1024
+
 
                 if args.verbose == 1:
                     print "New data file written."
@@ -98,7 +96,7 @@ def run_stream(args):
 
 def run_main():
     parser = argparse.ArgumentParser(description='acq400 stream')
-    parser.add_argument('--filesize', default=2048, type=int, help="Size of file to store in KB. If filesize > total data then no data will be stored.")
+    parser.add_argument('--filesize', default=1024, type=int, help="Size of file to store in KB. If filesize > total data then no data will be stored.")
     parser.add_argument('--totaldata', default=4096, type=int, help="Total amount of data to store in KB")
     parser.add_argument('--root', default="ROOT", type=str, help="Location to save files")
     parser.add_argument('--runtime', default=1000, type=int, help="How long to stream data for")
